@@ -543,7 +543,8 @@ def geo_stats(request):
         context = {}
         context['data'] = {'Python': 52.9, 'Jython': 1.6, 'Iron Python': 27.7}
         context['line_data'] = list(enumerate(range(1, 20)))
-        return render_to_response('global_stats/geo_stats.html', { 'array': json.dumps(array), 'forreal': forreal, 'countries': countries, 'passthis': passthis, 'bruh' : bruh, 'total': total, 'data': context['data'], 'line_data': context['line_data'] }, context_instance = RequestContext(request))
+        # return render_to_response('global_stats/geo_stats.html', { 'array': json.dumps(array), 'forreal': forreal, 'countries': countries, 'passthis': passthis, 'bruh' : bruh, 'total': total, 'data': context['data'], 'line_data': context['line_data'] }, context_instance = RequestContext(request))
+        return render_to_response('global_stats/d3_geo_stats.html', { 'array': json.dumps(array), 'forreal': forreal, 'countries': countries, 'passthis': passthis, 'bruh' : bruh, 'total': total, 'data': context['data'], 'line_data': context['line_data'] }, context_instance = RequestContext(request))
     else:
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
 
@@ -1414,7 +1415,7 @@ def table(request):
                     proof[1] = chase
                     chase += 14
 
-        checked = json.dumps(checked)
+        # checked = json.dumps(checked)
         return render_to_response('global_stats/table.html', {'checked': checked, 'better': better, 'tijuana': tijuana, 'usually': usually, 'dup_total': dup_total, 'ciu': ciu, 'total': total, 'testing': testing, 'countries': countries, 'netinfo': netinfo, 'netinfo_meta': netinfo_meta }, context_instance = RequestContext(request))
     else:
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
