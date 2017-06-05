@@ -841,6 +841,9 @@ def pie_by_year(request):
                     la_coolest.append(la_months)
                     deck[year] = la_coolest
 
+        with open('statsPage/static/by_year.json', 'w') as f:
+            json.dump(deck, f)
+
         tot_size = len(total_years)
         return render_to_response('time_stats/pie_by_year.html', { 'deck': deck, 'todo': todo, 'total_size': tot_size, 'total_years': total_years, 'all_the_years': all_the_years }, context_instance=RequestContext(request))
     else:
