@@ -841,7 +841,7 @@ def pie_by_year(request):
                     la_coolest.append(la_months)
                     deck[year] = la_coolest
 
-        with open('statsPage/static/by_year.json', 'w') as f:
+        with open('statsPage/static/json/by_year.json', 'w') as f:
             json.dump(deck, f)
 
         tot_size = len(total_years)
@@ -1825,10 +1825,10 @@ def nested_d3(request):
         outer_list = []
         outer_list.append(outer)
         new_jsonData = json.dumps(outer_list)
-        with open('statsPage/static/jsondata.json', 'w') as f:
+        with open('statsPage/static/json/jsondata.json', 'w') as f:
             json.dump(breathe, f)
 
-        with open('statsPage/static/testing.json', 'w') as f:
+        with open('statsPage/static/json/nested_d3.json', 'w') as f:
             json.dump(new_list, f)
 
         no_names = json.dumps(no_names)

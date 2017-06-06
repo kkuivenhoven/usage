@@ -65,7 +65,6 @@ function get_regions(){
     } 
 }
 
-
 function get_countries(){
     var waypts = [];
     var checked = document.getElementById('waypoints_countries');
@@ -82,7 +81,6 @@ function get_countries(){
         }
     } 
 }
-
 
 function get_cities(){
     var waypts = [];
@@ -101,23 +99,20 @@ function get_cities(){
     } 
 }
 
-function add_vals(what){
-    var tooshay = document.getElementsByClassName(what.value);
-    //alert(what.selectedIndex);
-    //console.log(what.value);
-    for(var k=0; k < what.length; k++){
-        if(what.options[k].selected){
-            console.log(what[k].value);
+function add_vals(regionsObject){
+    var regionsClass = document.getElementsByClassName(regionsObject.value);
+    for(var k=0; k < regionsObject.length; k++){
+        if(regionsObject.options[k].selected){
+            console.log(regionsObject[k].value);
         }
     }
-    for(var g=0; g < tooshay.length; g++){
-        tooshay[g].style.display = 'block';
+    for(var g=0; g < regionsClass.length; g++){
+        regionsClass[g].style.display = 'block';
     }
 }
 
 $(function() {  
     $('#waypoints_regions').on('hidden.bs.select', function (e) {
-      alert("what a stressful meeting");
     });
 });
 
@@ -147,24 +142,4 @@ $('#selectpicker-container').on('hide.bs.dropdown', function () {
   style: 'btn-info',
   size: 4
 });*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
