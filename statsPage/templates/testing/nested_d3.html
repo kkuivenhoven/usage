@@ -18,8 +18,7 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 
-var keepOut = {{no_names|safe}};
-//alert(keepOut);
+var functionNames = {{no_names|safe}};
 
 window.addEventListener('message', function(e) {
     var opts = e.data.opts,
@@ -159,9 +158,7 @@ function main(o, data) {
     var g = g1.selectAll("g")
         .data(d._children)
       .enter().append("g");
-    //console.log("here's g: " + g);
 
-    //g.filter(function(d) { console.log((d._children).length); return d._children; })
     g.filter(function(d) { return d._children; })
         .classed("children", true)
         .on("click", transition);
@@ -204,8 +201,8 @@ function main(o, data) {
 
     function transition(d) {
 
-      for(var i=0; i < keepOut.length; i++){
-        if(d.key == keepOut[i]){
+      for(var i=0; i < functionNames.length; i++){
+        if(d.key == functionNames[i]){
             return;
         }
       }
@@ -219,7 +216,6 @@ function main(o, data) {
           //t1 = g1.transition().duration(750),
           //t2 = g2.transition().duration(750);
 
-      console.log(g2);
       // Update the domain only after entering new elements.
       x.domain([d.x, d.x + d.dx]);
       y.domain([d.y, d.y + d.dy]);
@@ -247,11 +243,8 @@ function main(o, data) {
         transitioning = false;
       });
     }
-//}
-
     return g;
   }
-//}
 
   function text(text) {
     text.selectAll("tspan")
@@ -275,17 +268,15 @@ function main(o, data) {
   }
 
   function name(d) {
-    /*console.log("d.parent value: " + d.parent);
-    console.log("d.key value: " + d.key);*/
     return d.parent
         ? name(d.parent) + " / " + d.key + " (" + formatNumber(d.value) + ")"
         : d.key + " (" + formatNumber(d.value) + ")";
   }
 }
 
-var countries_file = "/static/json/" + "nested_d3.json";
+var actions_file = "/static/json/" + "nested_d3.json";
 if (window.location.hash === "") {
-    d3.json(countries_file, function(err, res) {
+    d3.json(actions_file, function(err, res) {
         if (!err) {
             var data = d3.nest()
                 .key(function(d) { return d.key; })

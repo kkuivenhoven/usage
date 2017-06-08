@@ -3,63 +3,33 @@ $(document).ready(function() {
     var months = document.getElementById('months').innerHTML; 
     var okay = $.makeArray(months);
     var monthdata = document.getElementById('monthdata').innerHTML; 
-    //monthdata = $.makeArray(monthdata);
     var copy = months;
     copy = copy.split(",");
-    console.log(copy);
-    console.log(okay);
 
     var parsedTest = JSON.parse(months);
     var sparsedTest = JSON.parse(monthdata);
-    console.log(parsedTest);
-    console.log(sparsedTest);
-    //console.log(stuff);
-    //console.log(typeof(months));
-    //console.log(monthdata);
 
     var total = [];
     for(var i = 0; i < parsedTest.length; i++)
     {
-        //total.push(months[i]);
         var nested = [];
         nested.push(parsedTest[i], sparsedTest[i]);
         total.push(nested);
-        //total.push(parsedTest[i], sparsedTest[i]);
     } 
-    console.log(total[0][0]);
     var max = Math.max.apply(Math,sparsedTest);
-    console.log(max);
 
     var all_users = 0;
     for(var j=0; j<total.length; j++)
     {
         all_users += total[j][1];
     }
-//});
 
-//$(document).ready(function() {
     var pie = new d3pie("pieChart", {
-        /*"header": {
-            "title": {
-                "text": "Percentage of session start dates by month",
-                "fontSize": 24,
-                "font": "open sans"
-            },
-            "subtitle": {
-                "text": "Note: if a month is not displayed, it means there were 0 start date visits for that month.",
-                "color": "#999999",
-                "fontSize": 12,
-                "font": "open sans"
-            },
-            "titleSubtitlePadding": 9
-        },*/
         "footer": {
             "text":  "Out of a total of " + all_users + " active user sessions.",
             "color": "#000000",
             "fontSize": 17,
-            "location": "bottom-center",/*
-            "font": "open sans",
-            "location": "bottom-left"*/
+            "location": "bottom-center",
         },
         "size": {
             "canvasWidth": 1000,

@@ -1,9 +1,0 @@
-[
-    { "name": "Hi", "count": 10,"color":"#0cd2ff" },
-    { "name": "Hi", "count": 20 ,"color":"#855dc6"},
-    { "name": "Hi", "count": 30,"color":"#ffaa0c" },
-    { "name": "Hi", "count": 40,"color":"#ff0c6d" },
-    { "name": "Hi", "count": 20 ,"color":"#0cffb2"},
-    { "name": "Hi", "count": 30,"color":"#fff20c" },
-    { "name": "Hi", "count": 40,"color":"#ff0c0c" }
-]
