@@ -28,7 +28,6 @@ from django.conf import settings
 import dateutil.parser
 import pycountry
 import operator
-# from geopy.geocoders import Nominatim
 import reverse_geocoder as rg
 import math
 from world_regions.models import Region
@@ -38,13 +37,14 @@ from itertools import tee, islice, chain, izip
 from six import string_types
 import time
 from urllib import urlopen
-# from django.conf.settings import PROJECT_ROOT
 import collections
+import csv
+# from itertools import izip
+
 
 
 if not settings.configured:
     settings.configure()
-
 
 
 ####### TEMPLATE RENDERERS #######
@@ -81,13 +81,7 @@ def show_sign_in_page(request):
 
 def platform_bar(request):
     if request.user.is_authenticated():
-        source = Source.objects.all()
-        net_info = NetInfo.objects.all()
-        action = Action.objects.all()
-        log_event = LogEvent.objects.all()
-        error = Error.objects.all()
         machine = Machine.objects.all()
-        # user = User.objects.all()
 
         d_count = 0
         l_count = 0
@@ -100,24 +94,14 @@ def platform_bar(request):
             elif mach.platform == 'Mozilla':
                 m_count += 1
 
-
         sl_graph = l_count*2
         sm_graph = m_count*2
         sd_graph = d_count*2
         l_graph = l_count*4
         m_graph = m_count*4
         d_graph = d_count*4
-        mach_meta = Machine._meta
-        # user_meta = User._meta
-        netinfo_meta = NetInfo._meta
-        source_meta = Source._meta
-        action_meta = Action._meta
-        logevent_meta = LogEvent._meta
 
-        current_path = request.get_full_path()
-
-
-        return render_to_response('session_stats/platform_bar.html', {'current_path': current_path, 'source': source, 'net_info': net_info, 'action': action, 'log_event': log_event, 'error': error, 'machine': machine, 'mach_meta': mach_meta, 'netinfo_meta': netinfo_meta, 'source_meta': source_meta, 'action_meta': action_meta, 'logevent_meta': logevent_meta, 'd_count': d_count, 'l_count': l_count, 'm_count': m_count, 'l_graph': l_graph, 'm_graph': m_graph, 'd_graph': d_graph, 'sl_graph': sl_graph, 'sm_graph': sm_graph, 'sd_graph': sd_graph }, context_instance=RequestContext(request))
+        return render_to_response('session_stats/platform_bar.html', {'machine': machine, 'd_count': d_count, 'l_count': l_count, 'm_count': m_count, 'l_graph': l_graph, 'm_graph': m_graph, 'd_graph': d_graph, 'sl_graph': sl_graph, 'sm_graph': sm_graph, 'sd_graph': sd_graph }, context_instance=RequestContext(request))
     else:
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
 
@@ -131,18 +115,7 @@ def all_years_pie(request):
                 stuff = dateutil.parser.parse(str(sesh.startDate))
                 i = 1
 
-        january = 0
-        february = 0
-        march = 0
-        april = 0
-        may = 0
-        june = 0
-        july = 0
-        august = 0
-        september = 0
-        october = 0
-        november = 0
-        december = 0
+        january = february = march = april = may = june = july = august = september = october = november = december = 0
 
         for sesh in session:
             if sesh.startDate.month == 1:
@@ -170,12 +143,11 @@ def all_years_pie(request):
             if sesh.startDate.month == 12:
                 december += 1
 
-
             months =[0,1,2,3,4,5,6,7,8,9,10,11]
             monthdata = [january,february,march,april,may,june,july,august,september,october,november,december]
             lineData = [[0,january],[1,february],[2, march],[3,april],[4, may],[5, june],[6, july],[7, august],[8, september],[9, october],[10, november],[11, december]]
 
-        return render_to_response('time_stats/all_years_pie.html', { 'session': session, 'stuff': stuff, 'january': january, 'february': february, 'march': march, 'april': april, 'may': may, 'june': june, 'july': july, 'august': august, 'september': september, 'october': october, 'november': november, 'december': december, 'lineData': lineData, 'months': months, 'monthdata': monthdata }, context_instance=RequestContext(request))
+        return render_to_response('time_stats/all_years_pie.html', { 'lineData': lineData, 'months': months, 'monthdata': monthdata }, context_instance=RequestContext(request))
     else:
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
 
@@ -185,38 +157,43 @@ def world_stats(request):
         netinfo = NetInfo.objects.all()
         countries = []
         cities = []
-        testing = []
-        dup_testing = []
+        country_abbr = []
+        for_country_names = []
         rement = 0
+        # adds country names and respective cities to lists
+        # these lists will be used later to help build the necessary structures.
+        # duplicated lists are necessary for later comparing values to 
+        # determines number of users
         for net in netinfo:
-            breathe = []
-            breathe.append(net.country)
-            breathe.append(net.city)
-            cities.append(breathe)
+            tmp_country_city = []
+            tmp_country_city.append(net.country)
+            tmp_country_city.append(net.city)
+            cities.append(tmp_country_city)
             if net.country not in countries: 
-                inc = []
+                # inc = []
+                tmp_country = []
                 countries.append(net.country)
-                # inc.append(net.country)
-                inc.append(net.country)
-                inc.append(rement)
-                testing.append(inc)
+                tmp_country.append(net.country)
+                tmp_country.append(rement)
+                # testing.append(tmp_country)
+                country_abbr.append(tmp_country)
                 dup_region = []
                 d_region = "duplicate"
                 dup_region.append(d_region)
-                dup_region.append(inc)
-                dup_testing.append(dup_region)
+                dup_region.append(tmp_country)
+                # dup_testing.append(dup_region)
+                for_country_names.append(dup_region)
                 rement += 25
 
-
-        netinfo_meta = NetInfo._meta
         countries.pop(0)
-        testing.pop(0)
-        dup_testing.pop(0)
+        country_abbr.pop(0)
+        for_country_names.pop(0)
         the_size = len(countries)
 
-        for test in dup_testing:
-            region = Region.objects.get(countries__country=test[1][0])
-            test[0] = region.name
+        # this for loop gets the region name based on the country
+        for country in for_country_names:
+            region = Region.objects.get(countries__country=country[1][0])
+            country[0] = region.name
 
         cities.pop(0)
         new_cities = []
@@ -226,6 +203,11 @@ def world_stats(request):
         sub_city = float(1000)/the_length
         mini_sub_city = 10
 
+        # this for loop adds all the city names to a list such that there aren't
+        # any duplicate city names. Moreover, this list gets the appropriate 
+        # country name associated with the respective city and adds it to the 
+        # new cities list -- it contains duplicates but the duplicates are
+        # removed later in this function/action
         for cit in cities:
             if cit[1] != "Unknown":
                 if cit[1] not in no_reps:
@@ -239,9 +221,10 @@ def world_stats(request):
                     mini_sub_city += 14
                     new_cities.append(new_c)
 
-        for test in testing:
-            c_name = pycountry.countries.get(alpha_2=test[0])
-            test[0] = c_name.name
+        # translates country abbreviation to actual country name for list of countries
+        for country in country_abbr:
+            c_name = pycountry.countries.get(alpha_2=country[0])
+            country[0] = c_name.name
 
         total = []
         dup_total = []
@@ -249,41 +232,44 @@ def world_stats(request):
         la_size = 25
         sub_num = sub_city
         circle_num = 0
+        # this for loop figures out how many times a user from that particular 
+        # country have used the software
         for country in countries:
             rgb_num = random.randint(112, 220)
             sec_rgb_num = random.randint(79, 220)
             third_rgb_num = random.randint(79, 220)
-            # print rgb_num
             la_count = 0
-            okay = []
-            dup_okay = []
+            # okay = []
+            country_count = []
+            # dup_okay = []
+            dup_country_count = []
             for net in netinfo:
                 if net.country == country:
                    la_count += 1 
-            okay.append(country)
-            okay.append(la_count)
-            okay.append(la_size)
+            country_count.append(country)
+            country_count.append(la_count)
+            country_count.append(la_size)
 
-            dup_okay.append(country)
-            dup_okay.append(la_count)
-            dup_okay.append(la_size)
+            dup_country_count.append(country)
+            dup_country_count.append(la_count)
+            dup_country_count.append(la_size)
             stuff = "Hello"
-            okay.append(stuff)
-            okay.append(sub_num)
-            okay.append(rgb_num)
-            okay.append(sec_rgb_num)
-            okay.append(third_rgb_num)
-            okay.append(circle_num)
+            country_count.append(stuff)
+            country_count.append(sub_num)
+            country_count.append(rgb_num)
+            country_count.append(sec_rgb_num)
+            country_count.append(third_rgb_num)
+            country_count.append(circle_num)
 
-            dup_okay.append(stuff)
-            dup_okay.append(sub_num)
-            dup_okay.append(rgb_num)
-            dup_okay.append(sec_rgb_num)
-            dup_okay.append(third_rgb_num)
-            dup_okay.append(circle_num)
+            dup_country_count.append(stuff)
+            dup_country_count.append(sub_num)
+            dup_country_count.append(rgb_num)
+            dup_country_count.append(sec_rgb_num)
+            dup_country_count.append(third_rgb_num)
+            dup_country_count.append(circle_num)
             sub_num += sub_city
             la_size += 25
-            la_future_region = "shred"
+            la_future_region = "placement"
             region = Region.objects.get(countries__country=country)
             ala_region = region.name
             la_region = ala_region.encode('ascii', 'ignore')
@@ -292,24 +278,17 @@ def world_stats(request):
             dup_region.append(la_region)
             dup_region.append(dup_size)
             dup_all.append(dup_region)
-            # dup_all.append(la_region)
-            dup_all.append(dup_okay)
+            dup_all.append(dup_country_count)
             dup_total.append(dup_all)
-            # dup_total.append(la_region)
-            # dup_total.append(dup_okay)
             dup_size += 25
-            total.append(okay)
+            total.append(country_count)
             
+        # needed to compute size of circles
         all_hits = 0
         for tot in total:
             all_hits += tot[1]
 
-        # dup_all_hits = 0
-        # for dup_tot in dup_total:
-        #     print dup_tot
-        #     # dup_all_hits += dup_tot[1]
-
-
+        # computes size of region circle
         for tot in total:
             num_circ = float(tot[1])/all_hits
             num_circ = num_circ * 100
@@ -317,6 +296,7 @@ def world_stats(request):
             num_circ += 3.5
             tot[8] = num_circ
 
+        # computes size of region circle
         for dup_tot in dup_total:
             num_circ = float(dup_tot[1][1])/all_hits
             num_circ = num_circ * 100
@@ -325,20 +305,25 @@ def world_stats(request):
             dup_tot[1][8] = num_circ
 
         for city in new_cities:
-            cool_count = 0
+            city_count = 0
             for net in netinfo:
                 if city[1] == net.city:
-                    cool_count += 1
-            city.append(cool_count)
+                    city_count += 1
+            city.append(city_count)
 
+        # translates country abbreviation to actual country name for list of countries
         for tot in total:
             c_name = pycountry.countries.get(alpha_2=tot[0])
             tot[0] = c_name.name
 
+        # translates country abbreviation to actual country name for list of countries
         for dup_tot in dup_total:
             c_name = pycountry.countries.get(alpha_2=dup_tot[1][0])
             dup_tot[1][0] = c_name.name
 
+        # this for loop iterates through the duplicated lists and decides
+        # where to add the city (i.e. what nested list to add it to)
+        # note: ciuded translates to city
         for dup_tot in dup_total:
             ciu = []
             for city in new_cities:
@@ -350,6 +335,9 @@ def world_stats(request):
                     ciu.append(ciudad)
             dup_tot[1][3] = ciu
             
+        # this for loop iterates through the duplicated lists and decides
+        # where to add the city (i.e. what nested list to add it to)
+        # note: ciuded translates to city
         for tot in total:
             ciu = []
             for city in new_cities:
@@ -365,21 +353,25 @@ def world_stats(request):
         dup_total = sorted(dup_total, key=operator.itemgetter(1), reverse=True)
         # dup_total = sorted(dup_total, key=lambda x : x[1][0])
 
+        # necessary for figuring out hwere to place the region for dendogram
         dupregion_size = 67
         for duptot in dup_total:
             duptot[0][1] = dupregion_size
             dupregion_size += 67
 
+        # necessary for figuring out hwere to place the region for dendogram
         dupthis_size = 67
         for duptot in dup_total:
             duptot[1][2] = dupthis_size
             dupthis_size += 67
 
+        # necessary for figuring out hwere to place the region for dendogram
         this_size = 67
         for tot in total:
             tot[2] = this_size
             this_size += 67
 
+        # necessary for figuring out hwere to place the city for dendogram
         dupla_mini_sub_city = 10
         for tot in dup_total:
              tot[1][3] = sorted(tot[1][3], key=operator.itemgetter(2), reverse=True)
@@ -387,11 +379,9 @@ def world_stats(request):
                  each[1] = dupla_mini_sub_city
                  dupla_mini_sub_city += 14
 
+        # necessary for figuring out hwere to place the city for dendogram
         la_mini_sub_city = 10
         for tot in total:
-            # print tot[3][0]
-            # tot[3] = sorted(tot[3], key=operator.itemgetter(2), reverse=True)
-            # tot[3] = sorted(tot[3], key=operator.itemgetter(2), reverse=True)
             for each in tot[3]:
                 each[1] = la_mini_sub_city
                 la_mini_sub_city += 14
@@ -400,46 +390,53 @@ def world_stats(request):
         for duptot in dup_total:
             all_regions.append(duptot[0][0])
 
-        six_jobs = []
-        usually = []
+        # six_jobs = []
+        temporary_list = []
+        # usually = []
+        final_list = []
         for duptot in dup_total:
-            if duptot[0][0] not in six_jobs:
-                six_jobs.append(duptot[0][0])
-                usually.append(duptot)
-            if duptot[0][0] in six_jobs:
-                for ush in usually:
+            if duptot[0][0] not in temporary_list:
+                temporary_list.append(duptot[0][0])
+                final_list.append(duptot)
+            if duptot[0][0] in temporary_list:
+                for ush in final_list:
                     if ush[0][0] == duptot[0][0]:
                         if ush[1][0] != duptot[1][0]:
                             ush.append(duptot[1])
 
 
-        tijuana = copy.deepcopy(usually)
-        rollie = copy.deepcopy(dup_total)
-        better = []
+        # tijuana = copy.deepcopy(final_list)
+        finalFinalList = copy.deepcopy(final_list)
+        # rollie = copy.deepcopy(dup_total)
+        copy_dupTotal = copy.deepcopy(dup_total)
+        # better = []
+        listWithRgb = []
         tots = 0
-        for roll in rollie:
+        # for roll in copy_dupTotal:
+        for cp_dT in copy_dupTotal:
            dup_rgb_num = random.randint(112, 220)
            dup_sec_rgb_num = random.randint(79, 220)
            dup_third_rgb_num = random.randint(79, 220)
-           que_bueno = len(roll)
-           bro = []
+           que_bueno = len(cp_dT)
+           # bro = []
+           tmp_rgb = []
            ice = []
            i = 1
            while i < que_bueno:
-               ice.append(roll[i])
+               ice.append(cp_dT[i])
                i = i+1 
-           bro.append(roll[0][0])
-           bro.append(roll[0][1])
-           bro.append(ice)
-           bro.append(dup_rgb_num)
-           bro.append(dup_sec_rgb_num)
-           bro.append(dup_third_rgb_num)
-           bro.append(tots)
-           better.append(bro)
+           tmp_rgb.append(cp_dT[0][0])
+           tmp_rgb.append(cp_dT[0][1])
+           tmp_rgb.append(ice)
+           tmp_rgb.append(dup_rgb_num)
+           tmp_rgb.append(dup_sec_rgb_num)
+           tmp_rgb.append(dup_third_rgb_num)
+           tmp_rgb.append(tots)
+           listWithRgb.append(tmp_rgb)
 
 
         change_this = 107
-        dont_lose = copy.deepcopy(better)
+        dont_lose = copy.deepcopy(listWithRgb)
         checked = []
         gaame = []
         for dont in dont_lose:
@@ -456,7 +453,7 @@ def world_stats(request):
                 gaame.append(dont[0])
                 checked.append(dont)
 
-        for cp in tijuana:
+        for cp in finalFinalList:
             cp.pop(0)
 
         checked = sorted(checked, key=operator.itemgetter(6), reverse=True)
@@ -478,7 +475,7 @@ def world_stats(request):
                     proof[1] = chase
                     chase += 14
 
-        return render_to_response('global_stats/world_stats.html', {'checked': checked, 'better': better, 'tijuana': tijuana, 'usually': usually, 'dup_total': dup_total, 'ciu': ciu, 'total': total, 'testing': testing, 'countries': countries, 'netinfo': netinfo, 'netinfo_meta': netinfo_meta }, context_instance = RequestContext(request))
+        return render_to_response('global_stats/world_stats.html', {'checked': checked, 'listWithRgb': listWithRgb, 'finalFinalList': finalFinalList, 'final_list': final_list, 'dup_total': dup_total, 'ciu': ciu, 'total': total, 'testing': testing, 'countries': countries, 'netinfo': netinfo }, context_instance = RequestContext(request))
     else:
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
 
@@ -488,68 +485,52 @@ def geo_stats(request):
         netinfo = NetInfo.objects.all()
         countries = []
         cities = []
-        testing = []
-        passthis = []
-        rement = 0 
+        # get country names that data has been collected on
         for net in netinfo:
-            breathe = []
-            breathe.append(net.country)
-            breathe.append(net.city)
-            cities.append(breathe)
+            country_city = []
+            country_city.append(net.country)
+            country_city.append(net.city)
+            cities.append(country_city)
             if net.country not in countries: 
-                inc = []
                 countries.append(net.country)
-                # inc.append(net.country)
-                inc.append(net.country)
-                inc.append(rement)
-                passthis.append(net.country)
-                testing.append(inc)
-                rement += 25
 
-        passthis.pop(0)
         countries.pop(0)
         total = []
+        # get total number of users from each country
         for country in countries:
             la_count = 0 
-            okay = []
+            tmp_country_city = []
             for net in netinfo:
                 if net.country == country:
                    la_count += 1 
-            okay.append(country)
-            okay.append(la_count)
-            total.append(okay)
-                
+            tmp_country_city.append(country)
+            tmp_country_city.append(la_count)
+            total.append(tmp_country_city)
 
-        forreal = []
+        country_names = []
+        # use pycountry to get country name from abbreviation
         for cnty in countries:
             c_name = pycountry.countries.get(alpha_2=cnty)
-            # print c_name.name
             cnty = c_name.name
-            forreal.append(c_name.name)
+            country_names.append(c_name.name)
 
+        # use pycountry to get country name from abbreviation
         for tot in total:
             c_name = pycountry.countries.get(alpha_2=tot[0])
             c_the_name = str(c_name.name)
-            #tot[0] = c_name.name
             tot[0] = str(c_the_name)
 
-
         total = sorted(total, key=operator.itemgetter(1), reverse=True)
-        # js_data = simplejson.dumps(my_dict)
-        forreal = json.dumps(forreal)
-        bruh = json.dumps(total)
+        country_names = json.dumps(country_names)
+        totalJSON = json.dumps(total)
 
-        array = [['X', 'Y', 'Z'], [1, 2, 3], [4, 5, 6]]
-        context = {}
-        context['data'] = {'Python': 52.9, 'Jython': 1.6, 'Iron Python': 27.7}
-        context['line_data'] = list(enumerate(range(1, 20)))
-        # return render_to_response('global_stats/geo_stats.html', { 'array': json.dumps(array), 'forreal': forreal, 'countries': countries, 'passthis': passthis, 'bruh' : bruh, 'total': total, 'data': context['data'], 'line_data': context['line_data'] }, context_instance = RequestContext(request))
-        return render_to_response('global_stats/d3_geo_stats.html', { 'array': json.dumps(array), 'forreal': forreal, 'countries': countries, 'passthis': passthis, 'bruh' : bruh, 'total': total, 'data': context['data'], 'line_data': context['line_data'] }, context_instance = RequestContext(request))
+        return render_to_response('global_stats/geo_stats.html', { 'country_names': country_names, 'countries': countries, 'totalJSON' : totalJSON, 'total': total }, context_instance = RequestContext(request))
     else:
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
 
 
 def calendar_data(request):
+    # getting rid of this?
     session = Session.objects.all()
     user = User.objects.all()
     start_sesh = []
@@ -570,15 +551,9 @@ def calendar_data(request):
         duration.append(sesh.lastDate - sesh.startDate)
         duration.append(sesh.netInfo)
         stuff_care.append(nested_sesh)
-        # print(sesh.lastDate - sesh.startDate)
         start_s = sesh.startDate
         end_s = sesh.lastDate
-        # la_strings.append(start_s.strftime('%m/%d/%Y')) 
-        # la_strings.append(end_s.strftime('%m/%d/%Y')) 
         the_strings = []
-        # the_strings.append("SUP")
-        # the_strings.append(start_s.strftime('%Y, %-m, %-d')) 
-        # the_strings.append(end_s.strftime('%Y, %-m, %-d')) 
         the_strings.append(start_s.strftime('%b, %-d, %Y, %I:%M %p')) 
         the_strings.append(end_s.strftime('%b, %-d, %Y, %I:%M %p')) 
         sup_strings.append(the_strings);
@@ -594,13 +569,8 @@ def calendar_data(request):
 def bar_sesh(request):
     if request.user.is_authenticated():
         session = Session.objects.all()
-        user = User.objects.all()
-        sup_strings = []
         the_diff = []
-        big_cool_diff = []
-        cool_diff = []
         for sesh in session:
-            # cool_diff = []
             nested_sesh = []
             start_s = sesh.startDate
             end_s = sesh.lastDate
@@ -608,7 +578,6 @@ def bar_sesh(request):
             the_strings.append(start_s.strftime('%b, %-d, %Y, %I:%M %p')) 
             the_strings.append(end_s.strftime('%b, %-d, %Y, %I:%M %p')) 
             time_diff = end_s-start_s
-            # time_diff = time_diff.strftime('%B, %-d, %Y, %Y:%M %p')
             if time_diff != datetime.timedelta(seconds=0):
                 time_vars = []
                 the_diff.append(str(time_diff))
@@ -616,34 +585,11 @@ def bar_sesh(request):
                 time_vars.append(start_s.strftime('%B'))
                 time_vars.append(start_s.strftime('%-m'))
                 time_vars.append(start_s.strftime('%-I %p'))
-                #cool_diff.append(start_s.strftime('%b, %-d, %Y, %I:%M %p'))
-                # cool_diff.append(str(time_diff))
                 time_str = str(time_diff)
-                cool_diff.append(time_str)
-                cool_diff.append(time_vars)
-                big_cool_diff.append(cool_diff)
-                sup_strings.append(the_strings)
 
+            one_min_sesh = one_hour_sesh = half_day_sesh = one_day_sesh = one_week_sesh = few_weeks_sesh = one_month_sesh = two_month_sesh = three_plus_sesh = []
 
-            one_min_sesh = []
-            one_hour_sesh = []
-            half_day_sesh = []
-            one_day_sesh = []
-            one_week_sesh = []
-            few_weeks_sesh = []
-            one_month_sesh = []
-            two_month_sesh = []
-            three_plus_sesh = []
-
-            one_min = 0
-            one_hour = 0
-            half_day = 0
-            one_day = 0 
-            one_week = 0
-            few_weeks = 0
-            one_month = 0
-            two_month = 0
-            three_plus = 0
+            one_min = one_hour = half_day = one_day = one_week = few_weeks = one_month = two_month = three_plus = 0
 
             for sesh in session:
                 start_s = sesh.startDate
@@ -677,44 +623,37 @@ def bar_sesh(request):
                     one_min_sesh.append(str(time_diff))
                     one_min += 1
 
+        all_the_seshs = {}
+        all_the_seshs['one_min_sesh'] = one_min_sesh
+        all_the_seshs['one_hour_sesh'] = one_hour_sesh
+        all_the_seshs['half_day_sesh'] = half_day_sesh
+        all_the_seshs['one_day_sesh'] = one_day_sesh
+        all_the_seshs['one_week_sesh'] = one_week_sesh
+        all_the_seshs['few_weeks_sesh'] = few_weeks_sesh
+        all_the_seshs['one_month_sesh'] = one_month_sesh
+        all_the_seshs['two_month_sesh'] = two_month_sesh
+        all_the_seshs['three_plus_sesh'] = three_plus_sesh
 
-            all_the_seshs = {}
-            all_the_seshs['one_min_sesh'] = one_min_sesh
-            all_the_seshs['one_hour_sesh'] = one_hour_sesh
-            all_the_seshs['half_day_sesh'] = half_day_sesh
-            all_the_seshs['one_day_sesh'] = one_day_sesh
-            all_the_seshs['one_week_sesh'] = one_week_sesh
-            all_the_seshs['few_weeks_sesh'] = few_weeks_sesh
-            all_the_seshs['one_month_sesh'] = one_month_sesh
-            all_the_seshs['two_month_sesh'] = two_month_sesh
-            all_the_seshs['three_plus_sesh'] = three_plus_sesh
+        # all_seshs = {}
+        all_seshs = collections.OrderedDict()
+        all_seshs['time'] = 'value'
+        all_seshs['one_min'] = one_min
+        all_seshs['one_hour'] = one_hour
+        all_seshs['half_day'] = half_day
+        all_seshs['one_day'] = one_day
+        all_seshs['one_week'] = one_week
+        all_seshs['few_weeks'] = few_weeks
+        all_seshs['one_month'] = one_month
+        all_seshs['two_month'] = two_month
+        all_seshs['three_plus'] = three_plus
+        print all_seshs
 
-            all_seshs = {}
-            all_seshs['one_min'] = one_min
-            all_seshs['one_hour'] = one_hour
-            all_seshs['half_day'] = half_day
-            all_seshs['one_day'] = one_day
-            all_seshs['one_week'] = one_week
-            all_seshs['few_weeks'] = few_weeks
-            all_seshs['one_month'] = one_month
-            all_seshs['two_month'] = two_month
-            all_seshs['three_plus'] = three_plus
+        with open('statsPage/static/csv/bar_session.csv', 'wb') as csv_file:
+            writer = csv.writer(csv_file)
+            for key, value in all_seshs.items():
+                writer.writerow([key, value])
 
-            la_diff = []
-            for each in the_diff:
-                # if ('days' or 'day') not in each:
-                if 'day' not in each:
-                    zero = '0 day, '
-                    zero += each
-                    la_diff.append(zero)
-                else:
-                    la_diff.append(each)
-
-
-            # cool_diff = json.dumps(cool_diff)
-            cool_strings = json.dumps(sup_strings)
-
-        return render_to_response('session_stats/bar_sesh.html', { 'all_seshs': all_seshs, 'all_the_seshs': all_the_seshs, 'cool_diff': cool_diff, 'big_cool_diff': big_cool_diff, 'la_diff': la_diff, 'sup_strings': sup_strings, 'the_diff': the_diff, 'cool_strings': cool_strings, 'session': session }, context_instance = RequestContext(request))
+        return render_to_response('session_stats/bar_sesh.html', { 'all_seshs': all_seshs, 'all_the_seshs': all_the_seshs, 'the_diff': the_diff, 'session': session }, context_instance = RequestContext(request))
     else:
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
 
@@ -728,12 +667,6 @@ def show_log(request):
     return render_to_response('showlog.html', {'current_path': current_path, 'machine': machine
     }, context_instance=RequestContext(request))
 
-
-def survey(request):
-    '''
-    Renders the help page.
-    '''
-    return render_to_response('survey.html', {}, context_instance=RequestContext(request))
 
 def help(request):
     '''
@@ -851,6 +784,9 @@ def pie_by_year(request):
 
 
 def testing(request):
+    # was using this to get user data so can figure out geolocation to get 
+    # something cool on the home page for user to interact with about
+    # their location. not sure if should just delete this or not
     if request.user.is_authenticated():
         session = Session.objects.all()
         send_url = 'http://freegeoip.net/json'
@@ -1019,13 +955,10 @@ def nested_chart(request):
                             # nested_bueno.append(states[3])
                         except IndexError:
                             pass
-                            #print 'sorry, no 3'
                     except IndexError:
                         pass
-                        #print 'sorry, no 2'
                 except IndexError:
                     pass
-                    #print 'sorry, no 1'
                 que_bueno.append(nested_bueno)
                 fade[2].append(que_bueno)
 
@@ -1056,7 +989,7 @@ def nested_chart(request):
                         laugh.append(dup[2][0][0])
                         sick.append(laugh)
             except IndexError:
-                print "NAH BRO"
+                print "index error, dup[2] does not exist"
 
 
         bed = []
@@ -1082,6 +1015,9 @@ def nested_chart(request):
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
 
 
+# gathers the next and previous in a list and returns
+# current, next, and previous to the call
+# used in a few places, do not delete
 def previous_and_next(some_iterable):
     prevs, items, nexts = tee(some_iterable, 3)
     prevs = chain([None], prevs)
@@ -1120,53 +1056,41 @@ def most_used_pie(request):
     return render_to_response('action_stats/most_used_pie.html', { 'cool': cool, 'all_names': all_names, 'act_names': act_names, 'action_meta': action_meta, 'actions': actions }, context_instance=RequestContext(request))
     
    
-def k_bro(request):
-    session = Session.objects.all()
-    start_s = []
-    end_s = []
-    for sesh in session:
-        start_s.append(sesh.startDate)
-        end_s.append(sesh.lastDate)
-    return render_to_response('testing/k_bro.html', { 'start_s': start_s, 'end_s': end_s, 'data': "que bro" }, context_instance=RequestContext(request))
-
-
 def table(request):
     if request.user.is_authenticated():
         netinfo = NetInfo.objects.all()
         countries = []
         cities = []
-        testing = []
-        dup_testing = []
-        rement = 0
+        country_abbr = []
+        for_country_names = [] 
+        # adds country names and respective cities to lists
+        # these lists will be used later to help build the necessary structures
+        # duplicated lists are necessary for later comparing values to determine
+        # number of users
         for net in netinfo:
-            breathe = []
-            breathe.append(net.country)
-            breathe.append(net.city)
-            cities.append(breathe)
+            tmp_country_city = []
+            tmp_country_city.append(net.country)
+            tmp_country_city.append(net.city)
+            cities.append(tmp_country_city)
             if net.country not in countries: 
-                inc = []
+                tmp_country = [] 
                 countries.append(net.country)
-                # inc.append(net.country)
-                inc.append(net.country)
-                inc.append(rement)
-                testing.append(inc)
+                tmp_country.append(net.country)
+                country_abbr.append(tmp_country)
                 dup_region = []
                 d_region = "duplicate"
                 dup_region.append(d_region)
-                dup_region.append(inc)
-                dup_testing.append(dup_region)
-                rement += 25
+                dup_region.append(tmp_country)
+                for_country_names.append(dup_region)
 
-
-        netinfo_meta = NetInfo._meta
         countries.pop(0)
-        testing.pop(0)
-        dup_testing.pop(0)
-        the_size = len(countries)
+        country_abbr.pop(0)
+        for_country_names.pop(0)
 
-        for test in dup_testing:
-            region = Region.objects.get(countries__country=test[1][0])
-            test[0] = region.name
+        # this for loop gets the region name based on the country
+        for country_name in for_country_names:
+            region = Region.objects.get(countries__country=country_name[1][0])
+            country_name[0] = region.name
 
         cities.pop(0)
         new_cities = []
@@ -1176,6 +1100,11 @@ def table(request):
         sub_city = float(1000)/the_length
         mini_sub_city = 10
 
+        # this for loop adds all the city names to a list such that there aren't
+        # any duplicate city names. Moreover, this list gets the appropriate
+        # country name associated with the respective city and adds it to the
+        # new cities list -- it contains duplicates but the duplicates are
+        # removed later in this function/action
         for cit in cities:
             if cit[1] != "Unknown":
                 if cit[1] not in no_reps:
@@ -1189,51 +1118,37 @@ def table(request):
                     mini_sub_city += 14
                     new_cities.append(new_c)
 
-        for test in testing:
-            c_name = pycountry.countries.get(alpha_2=test[0])
-            test[0] = c_name.name
+        # translates country abbreviation to actual country name for list of countries
+        for country in country_abbr:
+            c_name = pycountry.countries.get(alpha_2=country[0])
+            country[0] = c_name.name
 
         total = []
         dup_total = []
         dup_size = 25
-        la_size = 25
         sub_num = sub_city
-        circle_num = 0
+        # this for loop figures out how many times a user from that particular 
+        # country have used the software
         for country in countries:
-            rgb_num = random.randint(112, 220)
-            sec_rgb_num = random.randint(79, 220)
-            third_rgb_num = random.randint(79, 220)
-            # print rgb_num
             la_count = 0
-            okay = []
-            dup_okay = []
+            country_count = []
+            dup_country_count = []
             for net in netinfo:
                 if net.country == country:
                    la_count += 1 
-            okay.append(country)
-            okay.append(la_count)
-            okay.append(la_size)
+            country_count.append(country)
+            country_count.append(la_count)
 
-            dup_okay.append(country)
-            dup_okay.append(la_count)
-            dup_okay.append(la_size)
-            stuff = "Hello"
-            okay.append(stuff)
-            okay.append(sub_num)
-            okay.append(rgb_num)
-            okay.append(sec_rgb_num)
-            okay.append(third_rgb_num)
-            okay.append(circle_num)
+            dup_country_count.append(country)
+            dup_country_count.append(la_count)
+            needed_later = "placement"
+            country_count.append(needed_later)
+            country_count.append(sub_num)
 
-            dup_okay.append(stuff)
-            dup_okay.append(sub_num)
-            dup_okay.append(rgb_num)
-            dup_okay.append(sec_rgb_num)
-            dup_okay.append(third_rgb_num)
-            dup_okay.append(circle_num)
+            dup_country_count.append(needed_later)
+            dup_country_count.append(sub_num)
             sub_num += sub_city
-            la_size += 25
-            la_future_region = "shred"
+            la_future_region = "placement"
             region = Region.objects.get(countries__country=country)
             ala_region = region.name
             la_region = ala_region.encode('ascii', 'ignore')
@@ -1242,47 +1157,31 @@ def table(request):
             dup_region.append(la_region)
             dup_region.append(dup_size)
             dup_all.append(dup_region)
-            # dup_all.append(la_region)
-            dup_all.append(dup_okay)
+            dup_all.append(dup_country_count)
             dup_total.append(dup_all)
-            # dup_total.append(la_region)
-            # dup_total.append(dup_okay)
             dup_size += 25
-            total.append(okay)
+            total.append(country_count)
             
-        all_hits = 0
-        for tot in total:
-            all_hits += tot[1]
-
-        for tot in total:
-            num_circ = float(tot[1])/all_hits
-            num_circ = num_circ * 100
-            num_circ = math.ceil(num_circ)
-            num_circ += 3.5
-            tot[8] = num_circ
-
-        for dup_tot in dup_total:
-            num_circ = float(dup_tot[1][1])/all_hits
-            num_circ = num_circ * 100
-            num_circ = math.ceil(num_circ)
-            num_circ += 3.5
-            dup_tot[1][8] = num_circ
-
+        # counts how many users from a particular city have used the software
         for city in new_cities:
-            cool_count = 0
+            city_count = 0
             for net in netinfo:
                 if city[1] == net.city:
-                    cool_count += 1
-            city.append(cool_count)
+                    city_count += 1
+            city.append(city_count)
 
+        # translates country abbreviation to actual country name for list of countries
         for tot in total:
             c_name = pycountry.countries.get(alpha_2=tot[0])
             tot[0] = c_name.name
 
+        # translates country abbreviation to actual country name for list of countries
         for dup_tot in dup_total:
             c_name = pycountry.countries.get(alpha_2=dup_tot[1][0])
             dup_tot[1][0] = c_name.name
 
+        # this for loop iterates through the duplicated lists and decides
+        # where to add the city (i.e. what nested list to add it to)
         for dup_tot in dup_total:
             ciu = []
             for city in new_cities:
@@ -1294,6 +1193,8 @@ def table(request):
                     ciu.append(ciudad)
             dup_tot[1][3] = ciu
             
+        # this for loop iterates through the duplicated lists and decides
+        # where to add the city (i.e. what nested list to add it to)
         for tot in total:
             ciu = []
             for city in new_cities:
@@ -1308,21 +1209,25 @@ def table(request):
         total = sorted(total, key=operator.itemgetter(1), reverse=True)
         dup_total = sorted(dup_total, key=operator.itemgetter(1), reverse=True)
 
+        # necessary for figuring out where to place the region for dendogram
         dupregion_size = 67
         for duptot in dup_total:
             duptot[0][1] = dupregion_size
             dupregion_size += 67
 
+        # necessary for figuring out where to place the region for dendogram
         dupthis_size = 67
         for duptot in dup_total:
             duptot[1][2] = dupthis_size
             dupthis_size += 67
 
+        # necessary for figuring out where to place the region for dendogram
         this_size = 67
         for tot in total:
             tot[2] = this_size
             this_size += 67
 
+        # necessary for figuring out where to place the city for dendogram
         dupla_mini_sub_city = 10
         for tot in dup_total:
              tot[1][3] = sorted(tot[1][3], key=operator.itemgetter(2), reverse=True)
@@ -1330,73 +1235,76 @@ def table(request):
                  each[1] = dupla_mini_sub_city
                  dupla_mini_sub_city += 14
 
+        # necessary for figuring out where to place the city for dendogram
         la_mini_sub_city = 10
         for tot in total:
             for each in tot[3]:
                 each[1] = la_mini_sub_city
                 la_mini_sub_city += 14
 
-        all_regions = []
+        temporary_list = []
+        final_list = []
+        # pieces together the respective regions, countries and cities
         for duptot in dup_total:
-            all_regions.append(duptot[0][0])
-
-        six_jobs = []
-        usually = []
-        for duptot in dup_total:
-            if duptot[0][0] not in six_jobs:
-                six_jobs.append(duptot[0][0])
-                usually.append(duptot)
-            if duptot[0][0] in six_jobs:
-                for ush in usually:
+            if duptot[0][0] not in temporary_list:
+                temporary_list.append(duptot[0][0])
+                final_list.append(duptot)
+            if duptot[0][0] in temporary_list:
+                for ush in final_list:
                     if ush[0][0] == duptot[0][0]:
                         if ush[1][0] != duptot[1][0]:
                             ush.append(duptot[1])
 
 
-        tijuana = copy.deepcopy(usually)
-        rollie = copy.deepcopy(dup_total)
-        better = []
+        finalFinalList = copy.deepcopy(final_list)
+        copy_dupTotal = copy.deepcopy(dup_total)
+        # better = []
+        listWithRgb = []
         tots = 0
-        for roll in rollie:
+        # necessary for random colors for dendogram for respective 
+        # regions, countries, and cities
+        for cp_dT in copy_dupTotal:
            dup_rgb_num = random.randint(112, 220)
            dup_sec_rgb_num = random.randint(79, 220)
            dup_third_rgb_num = random.randint(79, 220)
-           que_bueno = len(roll)
-           bro = []
+           que_bueno = len(cp_dT)
+           tmp_Rgb = []
            ice = []
            i = 1
            while i < que_bueno:
-               ice.append(roll[i])
+               ice.append(cp_dT[i])
                i = i+1 
-           bro.append(roll[0][0])
-           bro.append(roll[0][1])
-           bro.append(ice)
-           bro.append(dup_rgb_num)
-           bro.append(dup_sec_rgb_num)
-           bro.append(dup_third_rgb_num)
-           bro.append(tots)
-           better.append(bro)
-
+           tmp_Rgb.append(cp_dT[0][0])
+           tmp_Rgb.append(cp_dT[0][1])
+           tmp_Rgb.append(ice)
+           tmp_Rgb.append(dup_rgb_num)
+           tmp_Rgb.append(dup_sec_rgb_num)
+           tmp_Rgb.append(dup_third_rgb_num)
+           tmp_Rgb.append(tots)
+           listWithRgb.append(tmp_Rgb)
 
         change_this = 107
-        dont_lose = copy.deepcopy(better)
+        copy_LWR = copy.deepcopy(listWithRgb)
         checked = []
-        gaame = []
-        for dont in dont_lose:
-            if dont[0] not in gaame:
-                thiiis = copy.deepcopy(dont)
-                thiiis.pop(0)
-                thiiis.pop(0)
-                que = thiiis[0]
-                que_length = len(que)
+        rcc_withCount = []
+        # gets the total count for each region and adds it to it's 
+        # respective region
+        # for dont in copy_LWR:
+        for LWR in copy_LWR:
+            if LWR[0] not in rcc_withCount:
+                LWR_copy = copy.deepcopy(LWR)
+                LWR_copy.pop(0)
+                LWR_copy.pop(0)
+                country_cities = LWR_copy[0]
+                cc_length = len(country_cities)
                 total = 0
-                for each in que:
+                for each in country_cities:
                     total += each[1]
-                dont[6] = total
-                gaame.append(dont[0])
-                checked.append(dont)
+                LWR[6] = total
+                rcc_withCount.append(LWR[0])
+                checked.append(LWR)
 
-        for cp in tijuana:
+        for cp in finalFinalList:
             cp.pop(0)
 
         checked = sorted(checked, key=operator.itemgetter(6), reverse=True)
@@ -1406,68 +1314,116 @@ def table(request):
             change_this += 106
 
         switch = 67
+        # for D3JS so that it knows where each country should be drawn
         for each in checked:
             for each_country in each[2]:
                 each_country[2] = switch
                 switch += 67
 
-        chase = 10
-        for perk in checked:
-            for switch in perk[2]:
-               for proof in switch[3]:
-                    proof[1] = chase
-                    chase += 14
+        increment = 10
+        # for D3JS so that it knows where each city should be drawn
+        for check in checked:
+            for ch in check[2]:
+               for cities in ch[3]:
+                    cities[1] = increment
+                    increment += 14
 
-        # checked = json.dumps(checked)
-        return render_to_response('global_stats/table.html', {'checked': checked, 'better': better, 'tijuana': tijuana, 'usually': usually, 'dup_total': dup_total, 'ciu': ciu, 'total': total, 'testing': testing, 'countries': countries, 'netinfo': netinfo, 'netinfo_meta': netinfo_meta }, context_instance = RequestContext(request))
+        return render_to_response('global_stats/table.html', {'checked': checked, 'listWithRgb': listWithRgb, 'finalFinalList': finalFinalList, 'dup_total': dup_total, 'ciu': ciu, 'total': total, 'country_abbr': country_abbr, 'countries': countries, 'netinfo': netinfo }, context_instance = RequestContext(request))
     else:
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
-    
+
+# https://stackoverflow.com/questions/406121/flattening-a-shallow-list-in-python
+def flatten(x):
+    result = []
+    for el in x:
+        if hasattr(el, "__iter__") and not isinstance(el, basestring):
+            result.extend(flatten(el))
+        else:
+            result.append(el)
+    return result
+
+# https://stackoverflow.com/questions/5389507/iterating-over-every-two-elements-in-a-list
+def pairwise(iterable):
+    "s -> (s0, s1), (s2, s3), (s4, s5), ..."
+    a = iter(iterable)
+    return izip(a, a)
 
 def sessions_started_per_day(request):
     if request.user.is_authenticated():
         session = Session.objects.all()
         dates = []
         all_dates = []
+        heatmap_dates = []
+        # gathers all start dates for the session and puts it in
+        # year month day format
         for sesh in session:
             nested = []
+            dict_nested ={} 
             just_date = sesh.startDate.date()
             str_date = sesh.startDate
-            strj_date = str_date.strftime('%Y,%-m,%d')
+            # below line is for format for google charts
+            # strj_date = str_date.strftime('%Y,%-m,%d')
+            # below line is for format for D3 JS
+            strj_date = str_date.strftime('%Y%m%d')
+            heatmap_date = str_date.strftime("%a %d %b %Y %H:%M:%S")
             if strj_date not in dates:
                 count = 0
                 dates.append(strj_date)
                 nested.append(strj_date)
                 nested.append(count)
+                dict_nested["date"] = heatmap_date
+                dict_nested["count"] = count
+                heatmap_dates.append(dict_nested)
             if nested:
                 all_dates.append(nested)
+                heatmap_dates.append(dict_nested)
 
         for sesh in session:
             just_date = sesh.startDate.date()
             str_date = sesh.startDate
+            # print str_date
             strj_date = str_date.strftime('%Y,%-m,%d')
+            hm_date = str_date.strftime('%a %d %b %Y %H:%M:%S')
             for all_d in all_dates:
                 if all_d[0] == strj_date:
                     all_d[1] += 1
+            for hm_d in heatmap_dates:
+                if hm_d['date'] == hm_date:
+                    hm_d['count'] += 1
+
+        with open('statsPage/static/csv/test.csv', 'wb') as f:
+            writer = csv.writer(f)
+            # for val in izip(stuff):
+            for x, y in pairwise(all_dates):
+                # writer.writerow(val)
+                writer.writerow(x)
+        # with open("target.csv", "w") as f:
+        #     w = csv.writer(f)
+        #     w.writerows(stuff)
 
         for all_d in all_dates:
             all_d[0] = json.dumps(all_d[0])
 
-        return render_to_response('session_stats/sessions_started_per_day.html', {'all_dates': all_dates, 'dates': dates}, context_instance=RequestContext(request))
+        return render_to_response('session_stats/sessions_started_per_day.html', {'heatmap_dates': heatmap_dates, 'all_dates': all_dates}, context_instance=RequestContext(request))
     else:
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
-
 
 def unique_user_sesh(request):
     if request.user.is_authenticated():
         session = Session.objects.all()
         dates = []
         all_dates = []
+        heatmap_dates = []
+        # gathers all start dates for the session and puts it in
+        # year month day format but also makes sure that for each day
+        # the start dates are unique for each user
         for sesh in session:
             nested = []
+            dict_nested ={} 
             just_date = sesh.startDate.date()
             str_date = sesh.startDate
             strj_date = str_date.strftime('%Y,%-m,%d')
+            heatmap_date = str_date.strftime("%a %d %b %Y %H:%M:%S")
             if strj_date not in dates:
                 count = 0
                 user_list = []
@@ -1475,8 +1431,12 @@ def unique_user_sesh(request):
                 nested.append(strj_date)
                 nested.append(count)
                 nested.append(user_list)
+                dict_nested["date"] = heatmap_date
+                dict_nested["count"] = count
+                dict_nested["user_list"] = user_list
             if nested:
                 all_dates.append(nested)
+                heatmap_dates.append(dict_nested)
 
         for all_d in all_dates:
             for sesh in session:
@@ -1488,44 +1448,39 @@ def unique_user_sesh(request):
                         all_d[2].append(sesh.user)
                         all_d[1] += 1
 
+        for hm_d in heatmap_dates:
+            # print hm_d
+            for sesh in session:
+                str_date = sesh.startDate
+                hm_date = str_date.strftime('%a %d %b %Y %H:%M:%S')
+                if hm_d['date'] == hm_date:
+                    if sesh.user in hm_d['user_list']:
+                        hm_d['count'] = len(hm_d['user_list'])
+
+
         for all_d in all_dates:
             all_d[0] = json.dumps(all_d[0])
             all_d[2] = []
 
-        return render_to_response('session_stats/unique_user_sesh.html', {'all_dates': all_dates, 'session': session}, context_instance=RequestContext(request))
+        for hm_d in heatmap_dates:
+            for key, value in hm_d.iteritems():
+                if key == "user_list":
+                    hm_d[key] = []
+
+        return render_to_response('session_stats/unique_user_sesh.html', {'heatmap_dates': heatmap_dates, 'all_dates': all_dates}, context_instance=RequestContext(request))
     else:
         return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
-
-
-
-def testing_d3(request):
-    if request.user.is_authenticated():
-        return render_to_response('testing/testing_d3.html', {}, context_instance=RequestContext(request))
-    else:
-        return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
-
-
-def hierarchical(request):
-    if request.user.is_authenticated():
-        return render_to_response('testing/hierarchical.html', {}, context_instance=RequestContext(request))
-    else:
-        return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
-
-
-def pre_made(request):
-    if request.user.is_authenticated():
-        return render_to_response('testing/pre_made.html', {}, context_instance=RequestContext(request))
-    else:
-        return render_to_response('showlog.html', {}, context_instance = RequestContext(request))
-
 
 def nested_d3(request):
     error_c = 0
     if request.user.is_authenticated():
         actions = Action.objects.all()
         act_names = []
+        # this for loop gathers all main action names and 
+        # parses the action names that have a . in it to
+        # get the main action name (first part of string prior
+        # to the period)
         for act in actions:
-            # if 'Error' not in act.name:
               if 'Error' in act.name:
                 error_c += 1
               if ' ' in act.name:
@@ -1535,44 +1490,38 @@ def nested_d3(request):
               if ' ' not in act.name:
                   act_names.append(act.name)
 
-        print "printing error count"
-        print error_c
-        admire = []
-        # s = {}
+        partitioned_names = []
         o_list = []
+        # this for loop parses all the action names that contain periods, 
+        # and adds them into a nested list called o_list
         for name in act_names:
             if "." in name:
-                wee = name.partition('.')
-                admire.append(wee[0])
-                # s = collections.OrderedDict()
+                par_name = name.partition('.')
+                partitioned_names.append(par_name[0])
                 s = {}
-                inner = wee[2].partition('.')
-                if "." in wee[2]:
-                    away = wee[2].partition('.')
-                    # ant = collections.OrderedDict()
-                    ant = {}
+                inner = par_name[2].partition('.')
+                if "." in par_name[2]:
+                    away = par_name[2].partition('.')
+                    nested_names = {}
                     if '.' in away[2]:
-                        art = away[2].partition('.')
-                        # side = collections.OrderedDict()
+                        nested_name_split = away[2].partition('.')
                         side = {}
-                        side[art[0]] = art[2]
-                        ant[away[0]] = side
-                        s[wee[0]] = ant
-                        # print art
+                        side[nested_name_split[0]] = nested_name_split[2]
+                        nested_names[away[0]] = side
+                        s[par_name[0]] = nested_names
                     else:
-                        ant[away[0]] = away[2]
-                        s[wee[0]] = ant
+                        nested_names[away[0]] = away[2]
+                        s[par_name[0]] = nested_names
                 else:    
-                    s[wee[0]] = wee[2]
+                    s[par_name[0]] = par_name[2]
                 o_list.append(s)
             if "." not in name:
-                admire.append(name)
-                # o_list.append(name)
-            
+                partitioned_names.append(name)
 
         first_l = []
+        # this for loop iterates through the main action names and adds 
+        # it into a nested list and initializes the counts to zero for each of the action names
         for name in act_names:
-            # first_d = {}
             first_d = collections.OrderedDict()
             second_l = []
             third_l = []
@@ -1580,19 +1529,15 @@ def nested_d3(request):
                 part_name = name.partition('.')
                 first_d["key"] = part_name[0]
                 if "." in part_name[2]:
-                    # second_d = {}
                     second_d = collections.OrderedDict()
                     nested_name = part_name[2].partition('.')
                     second_d["key"] = nested_name[0]
                     if "." in nested_name[2]:
-                        # third_d = {}
-                        # fourth_d = {}
                         third_d = collections.OrderedDict()
                         fourth_d = collections.OrderedDict()
                         fourth_l = []
                         snested_name = nested_name[2].partition('.')
                         third_d["key"] = snested_name[0]
-                        # third_d["value"] = snested_name[2]
                         fourth_d["key"] = snested_name[2]
                         fourth_d["values"] = 0
                         fourth_l.append(fourth_d)
@@ -1606,11 +1551,9 @@ def nested_d3(request):
                         second_d["values"] = nested_name[2]
                         second_l.append(second_d)
                 else:
-                    # afirst = {}
                       afirst = collections.OrderedDict()
                       af_list = []
                       afirst["key"] = part_name[2]
-                      # first_d["lalavalue"] = part_name[2]
                       afirst["values"] = 0
                       af_list.append(afirst)
                       first_d["values"] = af_list
@@ -1618,7 +1561,6 @@ def nested_d3(request):
             else:
                 first_d["key"] = name
                 first_d["value"] = 1
-                # first_d["value"] = 0
                 first_l.append(first_d)
 
         eighth_l = []
@@ -1632,6 +1574,10 @@ def nested_d3(request):
         check = []
         first_check = 0
         s_check = []
+        # iterates through the nested list, determines whether nested values 
+        # are a dictionary or not. If they are not a dictionary, check to see 
+        # if the name is in the temporary list. If it is, increment the count. 
+        # If it is not, move on to the next nested dictionary/list
         for l in first_l:
             for k, v in l.iteritems():
                 if type(v) is unicode:
@@ -1658,7 +1604,6 @@ def nested_d3(request):
                                     for s_k, s_v in i.iteritems():
                                         if type(s_v) is list:
                                             for o in s_v:
-                                                # im_empty = 'empty'
                                                 for i_k, i_v in o.iteritems():
                                                     if i_v not in eighth_l:
                                                         if type(i_v) is unicode:
@@ -1671,44 +1616,29 @@ def nested_d3(request):
                                                     if type(i_v) is int:
                                                         if im_empty in eighth_l:
                                                             total += 0
-                                                            # total += 1
-                                                            # i_v += 1
                                                             i_v = total
                                                             o.update({i_k: i_v})
 
-        # for l in first_l:
-        #     for k, v in l.iteritems():
-        #         if type(v) is list:
-        #             for time in v:
-        #                 for f_k, f_v in time.iteritems():
-        #                     if type(f_v) is list:
-        #                         for i in f_v:
-        #                             for s_k, s_v in i.iteritems():
-        #                                 if type(s_v) is list:
-        #                                     for o in s_v:
-        #                                         for i_k, i_v in o.iteritems():
-        #                                             if type(i_v) is unicode:
-        #                                                 print i_v
-
         outer_l = []
-        wee = 0
+        true_false = 0
+        # this for loop iterates through the nested list, if the type of the 
+        # nested value is an int, then depending on the level of nestedness, 
+        # it is determined that the function has zero nested functions and thus
+        # it is then notated in the nested lists/dictionaries
         for l in first_l:
-            # outer = {}
             outer = collections.OrderedDict()
             for k, v in l.iteritems():
-                # outer = {}
                 if type(v) is int:
                     outer["super_sub"] = "no super_sub"
                     outer["subfunction"] = "no subfunction"
                     outer["value"] = v
                     outer_l.append(outer)
-                    wee = 1
-                if wee == 1:
+                    true_false = 1
+                if true_false == 1:
                     outer["main_function"] = "no function"
-                    wee = 0
+                    true_false = 0
                 if type(v) is unicode:
                     outer["key"] = v
-                    # outer["main_function"] = v
                 if type(v) is list:
                     for time in v:
                         for f_k, f_v in time.iteritems():
@@ -1719,7 +1649,6 @@ def nested_d3(request):
                                 outer_l.append(outer)
                             if type(f_v) is unicode:
                                 outer["main_function"] = f_v
-                                # outer["key"] = f_v
                             if type(f_v) is list:
                                 for i in f_v:
                                     for s_k, s_v in i.iteritems():
@@ -1737,6 +1666,8 @@ def nested_d3(request):
         equal_count = 0
         added = 0
         new_dict = []
+        # the above for loop does not remove duplicate entries. Thus, the for loop below 
+        # accomplishes that job and removes the duplicates by adding them to a new list
         for previous, item, nxt in previous_and_next(outer_l):
             if (previous != None) and (nxt != None):
                 if (previous == item) or (nxt == item):
@@ -1756,11 +1687,11 @@ def nested_d3(request):
             
         new_list = []
         new_list = copy.deepcopy(outer_l)
-        for new in new_list:
-            print new['key']
 
         unique_docs = [] 
         sawn = []
+        # the below for loop iterates through the list without duplicate entries and 
+        # adjusts the count for them by comparing the entries to the entries in the list with the duplicates
         for new in new_list:
             if(new['key'], new['main_function'], new['subfunction'], new['super_sub']) in sawn:
                for un in unique_docs:
@@ -1775,6 +1706,10 @@ def nested_d3(request):
 
 
         no_names = []
+        # this for loop creates a list determining which actions don't have nested functions. 
+        # If they don't have nested functions, they are added to the list called "no_names" 
+        # in which this is passed through to the javascript and used in the D3JS functions to 
+        # prevent the user from clicking a level too deep in the nested d3 diagrams
         for saw in unique_docs:
             if saw['main_function'] == 'no function':
                if (saw['key'] != 'genutil') and (saw['key'] != 'cdutil'):
@@ -1786,47 +1721,11 @@ def nested_d3(request):
             elif (saw['super_sub'] != 'no super_sub') and (saw['main_function'] != 'no function') and (saw['subfunction'] != 'no subfunction'):
                no_names.append(saw['super_sub']) 
 
-        ugh = collections.OrderedDict()
-        la_que = []
-        ugh.update({"key": "usage"})
-        ugh.update({"values": outer_l})
-        la_que.append(ugh)
-
-        j = 0
-        for l in outer_l:
-            j += 1
-
-        d = {}
-        for ad in admire:
-            if ad not in d:
-                d[ad] = 1
-            else:
-                d[ad] += 1
-
-        time = collections.OrderedDict()
-        la_vals = []
-        for key, value in d.iteritems():
-            okay = collections.OrderedDict()
-            okay["key"] = key
-            okay["value"] = value
-            la_vals.append(okay) 
-
-        time.update({"key":"usage"})
-        time.update({"values":la_vals})
-        breathe = []
-        breathe.append(time)
-        
-        jsonData = json.dumps(d)
-        outer = {}
-        inner_vals = []
-        inner_vals.append(jsonData)
-        outer.update({'values':inner_vals})
-        outer.update({'key':'usage'})
-        outer_list = []
-        outer_list.append(outer)
-        new_jsonData = json.dumps(outer_list)
-        with open('statsPage/static/json/jsondata.json', 'w') as f:
-            json.dump(breathe, f)
+        outerJSON = collections.OrderedDict()
+        outerList = []
+        outerJSON.update({"key": "usage"})
+        outerJSON.update({"values": outer_l})
+        outerList.append(outerJSON)
 
         with open('statsPage/static/json/nested_d3.json', 'w') as f:
             json.dump(new_list, f)

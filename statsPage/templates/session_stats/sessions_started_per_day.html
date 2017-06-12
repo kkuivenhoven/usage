@@ -4,55 +4,38 @@
 
 {% block content %}
 {% load staticfiles %}
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<!-- https://codepen.io/g1eb/pen/KWXzLR -->
+<!--link rel="stylesheet" type="text/css" href="dist/calendar-heatmap.min.css"-->
+<!--script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script-->
 
-<!--div class="container">
-    <div id="feature-carousel" class="carousel slide" data-ride="carousel">
-        <div class="carousel-inner" role="listbox">
-            <div class="item active">
-                <center><h2>Users Per Day</h2></center>
-            </div>
-        </div>
-    </div>
-</div-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js" charset="utf-8"></script>
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="{% static 'js/calendar_heatmap.js' %}"></script>
+<link href="{% static 'css/calendar_heatmap.css' %}" rel="stylesheet">
 
-<center>
-<div id="calendar_basic" style="width: 1000px; height: 350px;"></div>
-</center>
+<body>
+</body>
 
 <script type="text/javascript">
-  google.charts.load("current", {packages:["calendar"]});
-  google.charts.setOnLoadCallback(drawChart);
 
-  var time_data = {{all_dates|safe}};
-
-  var new_a = [];
-  for(var i=0; i < time_data.length; i++){
-    var nested = [];
-    var kay = time_data[i][0];
-    var res = kay.substring(1, kay.length-1);
-    var oll = res.split(",");
-    var month = oll[1];
-    month = month-1;
-    var date_js = new Date(oll[0], month, oll[2]);
-    nested.push(date_js);
-    nested.push(time_data[i][1]);
-    new_a.push(nested);
-  } 
-
-function drawChart() {
-   var dataTable = new google.visualization.DataTable();
-   dataTable.addColumn({ type: 'date', id: 'Date' });
-   dataTable.addColumn({ type: 'number', id: 'Active Users' });
-   dataTable.addRows(new_a);
-
-   var chart = new google.visualization.Calendar(document.getElementById('calendar_basic'));
-
-   var options = {
-    height: 350,
-   };
-
-   chart.draw(dataTable, options);
-}
+      var now = moment().endOf('day').toDate();
+      var yearAgo = moment().startOf('day').subtract(1, 'year').toDate();
+      var chartData = {{heatmap_dates|safe}};
+      /*var chartData = d3.time.days(yearAgo, now).map(function (dateElement) {
+        return {
+          date: dateElement,
+          count: (dateElement.getDay() !== 0 && dateElement.getDay() !== 6) ? Math.floor(Math.random() * 60) : Math.floor(Math.random() * 10)
+        };
+      });*/
+      console.log(chartData);
+      var heatmap = calendarHeatmap()
+                      .data(chartData)
+                      .selector('.container')
+                      .tooltipEnabled(true)
+                      .colorRange(['#f4f7f7', '#79a8a9'])
+                      .onClick(function (data) {
+                        console.log('data', data);
+                      });
+      heatmap();
 </script>
 {% endblock content %}
