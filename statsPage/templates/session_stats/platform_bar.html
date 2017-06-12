@@ -7,10 +7,6 @@
 {% load staticfiles %}
 <link href="{% static 'css/session_stats/platform_bar.css' %}" rel="stylesheet">
 
-{% for mach in machine %}
-    {{mach}}<br>
-{% endfor %}
-
 <br>
 <div class="small_chart">
   <div style="width: {{d_count}}px;" tooltip="Platform: Darwin &rarr; Count: {{d_count}}"></div>
