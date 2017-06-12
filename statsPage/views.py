@@ -70,7 +70,7 @@ def show_sign_in_page(request):
     # De-activated user
     elif not user.is_active:
         return render_to_response('authentication_page.html', {
-            'error_message': "The account you are trying to use has been disabled.<br/>" + 
+            'error_message': "The account you are trying to use has been disabled.<br/>" +
             "Please contact a system administrator.",
         }, context_instance=RequestContext(request))
     # Valid login, active user
@@ -162,14 +162,14 @@ def world_stats(request):
         rement = 0
         # adds country names and respective cities to lists
         # these lists will be used later to help build the necessary structures.
-        # duplicated lists are necessary for later comparing values to 
+        # duplicated lists are necessary for later comparing values to
         # determines number of users
         for net in netinfo:
             tmp_country_city = []
             tmp_country_city.append(net.country)
             tmp_country_city.append(net.city)
             cities.append(tmp_country_city)
-            if net.country not in countries: 
+            if net.country not in countries:
                 # inc = []
                 tmp_country = []
                 countries.append(net.country)
@@ -204,8 +204,8 @@ def world_stats(request):
         mini_sub_city = 10
 
         # this for loop adds all the city names to a list such that there aren't
-        # any duplicate city names. Moreover, this list gets the appropriate 
-        # country name associated with the respective city and adds it to the 
+        # any duplicate city names. Moreover, this list gets the appropriate
+        # country name associated with the respective city and adds it to the
         # new cities list -- it contains duplicates but the duplicates are
         # removed later in this function/action
         for cit in cities:
@@ -232,7 +232,7 @@ def world_stats(request):
         la_size = 25
         sub_num = sub_city
         circle_num = 0
-        # this for loop figures out how many times a user from that particular 
+        # this for loop figures out how many times a user from that particular
         # country have used the software
         for country in countries:
             rgb_num = random.randint(112, 220)
@@ -245,7 +245,7 @@ def world_stats(request):
             dup_country_count = []
             for net in netinfo:
                 if net.country == country:
-                   la_count += 1 
+                   la_count += 1
             country_count.append(country)
             country_count.append(la_count)
             country_count.append(la_size)
@@ -282,7 +282,7 @@ def world_stats(request):
             dup_total.append(dup_all)
             dup_size += 25
             total.append(country_count)
-            
+
         # needed to compute size of circles
         all_hits = 0
         for tot in total:
@@ -334,7 +334,7 @@ def world_stats(request):
                     ciudad.append(city[3])
                     ciu.append(ciudad)
             dup_tot[1][3] = ciu
-            
+
         # this for loop iterates through the duplicated lists and decides
         # where to add the city (i.e. what nested list to add it to)
         # note: ciuded translates to city
@@ -348,7 +348,7 @@ def world_stats(request):
                     ciudad.append(city[3])
                     ciu.append(ciudad)
             tot[3] = ciu
-            
+
         total = sorted(total, key=operator.itemgetter(1), reverse=True)
         dup_total = sorted(dup_total, key=operator.itemgetter(1), reverse=True)
         # dup_total = sorted(dup_total, key=lambda x : x[1][0])
@@ -424,7 +424,7 @@ def world_stats(request):
            i = 1
            while i < que_bueno:
                ice.append(cp_dT[i])
-               i = i+1 
+               i = i+1
            tmp_rgb.append(cp_dT[0][0])
            tmp_rgb.append(cp_dT[0][1])
            tmp_rgb.append(ice)
@@ -491,18 +491,18 @@ def geo_stats(request):
             country_city.append(net.country)
             country_city.append(net.city)
             cities.append(country_city)
-            if net.country not in countries: 
+            if net.country not in countries:
                 countries.append(net.country)
 
         countries.pop(0)
         total = []
         # get total number of users from each country
         for country in countries:
-            la_count = 0 
+            la_count = 0
             tmp_country_city = []
             for net in netinfo:
                 if net.country == country:
-                   la_count += 1 
+                   la_count += 1
             tmp_country_city.append(country)
             tmp_country_city.append(la_count)
             total.append(tmp_country_city)
@@ -554,12 +554,12 @@ def calendar_data(request):
         start_s = sesh.startDate
         end_s = sesh.lastDate
         the_strings = []
-        the_strings.append(start_s.strftime('%b, %-d, %Y, %I:%M %p')) 
-        the_strings.append(end_s.strftime('%b, %-d, %Y, %I:%M %p')) 
+        the_strings.append(start_s.strftime('%b, %-d, %Y, %I:%M %p'))
+        the_strings.append(end_s.strftime('%b, %-d, %Y, %I:%M %p'))
         sup_strings.append(the_strings);
         la_strings.append("SUP")
-        la_strings.append(start_s.strftime('%Y, %-m, %-d')) 
-        la_strings.append(end_s.strftime('%Y, %-m, %-d')) 
+        la_strings.append(start_s.strftime('%Y, %-m, %-d'))
+        la_strings.append(end_s.strftime('%Y, %-m, %-d'))
 
     cool_strings = json.dumps(sup_strings)
 
@@ -575,8 +575,8 @@ def bar_sesh(request):
             start_s = sesh.startDate
             end_s = sesh.lastDate
             the_strings = []
-            the_strings.append(start_s.strftime('%b, %-d, %Y, %I:%M %p')) 
-            the_strings.append(end_s.strftime('%b, %-d, %Y, %I:%M %p')) 
+            the_strings.append(start_s.strftime('%b, %-d, %Y, %I:%M %p'))
+            the_strings.append(end_s.strftime('%b, %-d, %Y, %I:%M %p'))
             time_diff = end_s-start_s
             if time_diff != datetime.timedelta(seconds=0):
                 time_vars = []
@@ -784,7 +784,7 @@ def pie_by_year(request):
 
 
 def testing(request):
-    # was using this to get user data so can figure out geolocation to get 
+    # was using this to get user data so can figure out geolocation to get
     # something cool on the home page for user to interact with about
     # their location. not sure if should just delete this or not
     if request.user.is_authenticated():
@@ -826,7 +826,7 @@ def testing(request):
             count = 0
             for act in act_names:
                 if name == act:
-                   count += 1 
+                   count += 1
             func_names.append(count)
             all_names.append(func_names)
 
@@ -858,10 +858,10 @@ def nested_chart(request):
             sub_list = []
 
             func_names.append(name)
-            count = 0 
+            count = 0
             for act in act_names:
                 if name == act:
-                   count += 1 
+                   count += 1
             func_names.append(count)
             func_names.append(sub_list)
             all_names.append(func_names)
@@ -869,7 +869,7 @@ def nested_chart(request):
         admire = []
         for name in cool:
             if "." not in name:
-               admire.append(name) 
+               admire.append(name)
 
         yeah = []
         chillin = copy.deepcopy(all_names)
@@ -900,7 +900,7 @@ def nested_chart(request):
                 count = 0
                 for previous, item, nxt in previous_and_next(fine[2]):
                     if item[0] in yup:
-                        yup.append(item[1]) 
+                        yup.append(item[1])
                     if item[0] not in yup:
                         yup.append(item[0])
                         yup.append(item[1])
@@ -923,14 +923,14 @@ def nested_chart(request):
                         count = 0
                     learn.append(item)
             growth.append(learn)
-            
+
         huh = []
         for fine in yeah:
             if len(fine[2]) != 0:
                 for grow in growth:
-                    if fine[2][0][0] == grow[0]:    
+                    if fine[2][0][0] == grow[0]:
                         fine[2] = grow
-                    
+
 
 
         dup_all = copy.deepcopy(all_names)
@@ -948,7 +948,7 @@ def nested_chart(request):
                     que_bueno.append(states[1])
                     try:
                         nested_bueno.append(states[2])
-                        try: 
+                        try:
                             super_nested = []
                             super_nested.append(states[3])
                             nested_bueno.append(super_nested)
@@ -982,7 +982,7 @@ def nested_chart(request):
                 sick.append(dup[0])
                 bay.append(dup[0])
             try:
-                if dup[2]: 
+                if dup[2]:
                     if dup[2][0][0] not in idgt:
                         idgt.append(dup[2][0][0])
                         laugh.append(dup[0])
@@ -1048,21 +1048,21 @@ def most_used_pie(request):
         count = 0
         for act in act_names:
             if name == act:
-               count += 1 
+               count += 1
         func_names.append(count)
         all_names.append(func_names)
 
     all_names = json.dumps(all_names)
     return render_to_response('action_stats/most_used_pie.html', { 'cool': cool, 'all_names': all_names, 'act_names': act_names, 'action_meta': action_meta, 'actions': actions }, context_instance=RequestContext(request))
-    
-   
+
+
 def table(request):
     if request.user.is_authenticated():
         netinfo = NetInfo.objects.all()
         countries = []
         cities = []
         country_abbr = []
-        for_country_names = [] 
+        for_country_names = []
         # adds country names and respective cities to lists
         # these lists will be used later to help build the necessary structures
         # duplicated lists are necessary for later comparing values to determine
@@ -1072,8 +1072,8 @@ def table(request):
             tmp_country_city.append(net.country)
             tmp_country_city.append(net.city)
             cities.append(tmp_country_city)
-            if net.country not in countries: 
-                tmp_country = [] 
+            if net.country not in countries:
+                tmp_country = []
                 countries.append(net.country)
                 tmp_country.append(net.country)
                 country_abbr.append(tmp_country)
@@ -1127,7 +1127,7 @@ def table(request):
         dup_total = []
         dup_size = 25
         sub_num = sub_city
-        # this for loop figures out how many times a user from that particular 
+        # this for loop figures out how many times a user from that particular
         # country have used the software
         for country in countries:
             la_count = 0
@@ -1135,7 +1135,7 @@ def table(request):
             dup_country_count = []
             for net in netinfo:
                 if net.country == country:
-                   la_count += 1 
+                   la_count += 1
             country_count.append(country)
             country_count.append(la_count)
 
@@ -1161,7 +1161,7 @@ def table(request):
             dup_total.append(dup_all)
             dup_size += 25
             total.append(country_count)
-            
+
         # counts how many users from a particular city have used the software
         for city in new_cities:
             city_count = 0
@@ -1192,7 +1192,7 @@ def table(request):
                     ciudad.append(city[3])
                     ciu.append(ciudad)
             dup_tot[1][3] = ciu
-            
+
         # this for loop iterates through the duplicated lists and decides
         # where to add the city (i.e. what nested list to add it to)
         for tot in total:
@@ -1205,7 +1205,7 @@ def table(request):
                     ciudad.append(city[3])
                     ciu.append(ciudad)
             tot[3] = ciu
-            
+
         total = sorted(total, key=operator.itemgetter(1), reverse=True)
         dup_total = sorted(dup_total, key=operator.itemgetter(1), reverse=True)
 
@@ -1261,7 +1261,7 @@ def table(request):
         # better = []
         listWithRgb = []
         tots = 0
-        # necessary for random colors for dendogram for respective 
+        # necessary for random colors for dendogram for respective
         # regions, countries, and cities
         for cp_dT in copy_dupTotal:
            dup_rgb_num = random.randint(112, 220)
@@ -1273,7 +1273,7 @@ def table(request):
            i = 1
            while i < que_bueno:
                ice.append(cp_dT[i])
-               i = i+1 
+               i = i+1
            tmp_Rgb.append(cp_dT[0][0])
            tmp_Rgb.append(cp_dT[0][1])
            tmp_Rgb.append(ice)
@@ -1287,7 +1287,7 @@ def table(request):
         copy_LWR = copy.deepcopy(listWithRgb)
         checked = []
         rcc_withCount = []
-        # gets the total count for each region and adds it to it's 
+        # gets the total count for each region and adds it to it's
         # respective region
         # for dont in copy_LWR:
         for LWR in copy_LWR:
@@ -1358,7 +1358,7 @@ def sessions_started_per_day(request):
         # year month day format
         for sesh in session:
             nested = []
-            dict_nested ={} 
+            dict_nested ={}
             just_date = sesh.startDate.date()
             str_date = sesh.startDate
             # below line is for format for google charts
@@ -1419,7 +1419,7 @@ def unique_user_sesh(request):
         # the start dates are unique for each user
         for sesh in session:
             nested = []
-            dict_nested ={} 
+            dict_nested ={}
             just_date = sesh.startDate.date()
             str_date = sesh.startDate
             strj_date = str_date.strftime('%Y,%-m,%d')
@@ -1476,7 +1476,7 @@ def nested_d3(request):
     if request.user.is_authenticated():
         actions = Action.objects.all()
         act_names = []
-        # this for loop gathers all main action names and 
+        # this for loop gathers all main action names and
         # parses the action names that have a . in it to
         # get the main action name (first part of string prior
         # to the period)
@@ -1492,7 +1492,7 @@ def nested_d3(request):
 
         partitioned_names = []
         o_list = []
-        # this for loop parses all the action names that contain periods, 
+        # this for loop parses all the action names that contain periods,
         # and adds them into a nested list called o_list
         for name in act_names:
             if "." in name:
@@ -1512,14 +1512,14 @@ def nested_d3(request):
                     else:
                         nested_names[away[0]] = away[2]
                         s[par_name[0]] = nested_names
-                else:    
+                else:
                     s[par_name[0]] = par_name[2]
                 o_list.append(s)
             if "." not in name:
                 partitioned_names.append(name)
 
         first_l = []
-        # this for loop iterates through the main action names and adds 
+        # this for loop iterates through the main action names and adds
         # it into a nested list and initializes the counts to zero for each of the action names
         for name in act_names:
             first_d = collections.OrderedDict()
@@ -1574,9 +1574,9 @@ def nested_d3(request):
         check = []
         first_check = 0
         s_check = []
-        # iterates through the nested list, determines whether nested values 
-        # are a dictionary or not. If they are not a dictionary, check to see 
-        # if the name is in the temporary list. If it is, increment the count. 
+        # iterates through the nested list, determines whether nested values
+        # are a dictionary or not. If they are not a dictionary, check to see
+        # if the name is in the temporary list. If it is, increment the count.
         # If it is not, move on to the next nested dictionary/list
         for l in first_l:
             for k, v in l.iteritems():
@@ -1621,8 +1621,8 @@ def nested_d3(request):
 
         outer_l = []
         true_false = 0
-        # this for loop iterates through the nested list, if the type of the 
-        # nested value is an int, then depending on the level of nestedness, 
+        # this for loop iterates through the nested list, if the type of the
+        # nested value is an int, then depending on the level of nestedness,
         # it is determined that the function has zero nested functions and thus
         # it is then notated in the nested lists/dictionaries
         for l in first_l:
@@ -1661,12 +1661,12 @@ def nested_d3(request):
                                                 for y_k, y_v in y.iteritems():
                                                     if type(y_v) is unicode:
                                                         outer["super_sub"] = y_v
-                            
+
 
         equal_count = 0
         added = 0
         new_dict = []
-        # the above for loop does not remove duplicate entries. Thus, the for loop below 
+        # the above for loop does not remove duplicate entries. Thus, the for loop below
         # accomplishes that job and removes the duplicates by adding them to a new list
         for previous, item, nxt in previous_and_next(outer_l):
             if (previous != None) and (nxt != None):
@@ -1682,15 +1682,15 @@ def nested_d3(request):
                             added = 1
                         equal_count += 1
                 if previous != nxt:
-                    equal_count = 0 
+                    equal_count = 0
                     added = 0
-            
+
         new_list = []
         new_list = copy.deepcopy(outer_l)
 
-        unique_docs = [] 
+        unique_docs = []
         sawn = []
-        # the below for loop iterates through the list without duplicate entries and 
+        # the below for loop iterates through the list without duplicate entries and
         # adjusts the count for them by comparing the entries to the entries in the list with the duplicates
         for new in new_list:
             if(new['key'], new['main_function'], new['subfunction'], new['super_sub']) in sawn:
@@ -1706,20 +1706,20 @@ def nested_d3(request):
 
 
         no_names = []
-        # this for loop creates a list determining which actions don't have nested functions. 
-        # If they don't have nested functions, they are added to the list called "no_names" 
-        # in which this is passed through to the javascript and used in the D3JS functions to 
+        # this for loop creates a list determining which actions don't have nested functions.
+        # If they don't have nested functions, they are added to the list called "no_names"
+        # in which this is passed through to the javascript and used in the D3JS functions to
         # prevent the user from clicking a level too deep in the nested d3 diagrams
         for saw in unique_docs:
             if saw['main_function'] == 'no function':
                if (saw['key'] != 'genutil') and (saw['key'] != 'cdutil'):
-                   no_names.append(saw['key']) 
+                   no_names.append(saw['key'])
             elif (saw['subfunction'] == 'no subfunction') and (saw['main_function'] != 'no function'):
-               no_names.append(saw['main_function']) 
+               no_names.append(saw['main_function'])
             elif (saw['super_sub'] == 'no super_sub') and (saw['main_function'] != 'no function') and (saw['subfunction'] != 'no subfunction'):
-               no_names.append(saw['subfunction']) 
+               no_names.append(saw['subfunction'])
             elif (saw['super_sub'] != 'no super_sub') and (saw['main_function'] != 'no function') and (saw['subfunction'] != 'no subfunction'):
-               no_names.append(saw['super_sub']) 
+               no_names.append(saw['super_sub'])
 
         outerJSON = collections.OrderedDict()
         outerList = []
