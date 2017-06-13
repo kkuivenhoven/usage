@@ -11,4 +11,3 @@ Helps us keep track of UVCDAT usage.
     virtualenv env
     source env/bin/activate
     pip install -r requirements.txt
-    
