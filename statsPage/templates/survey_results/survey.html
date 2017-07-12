@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Survey<br><p>&nbsp;&nbsp;&nbsp;A survey for users to help UV-CDAT developers make improvements</p>{% endblock title %}
+
+{% block content %}
+{% load staticfiles %}
+
+<!--script src="https://cdnjs.cloudflare.com/ajax/libs/survey-jquery/0.12.17/survey.jquery.min.js"></script-->
+<script src="https://surveyjs.azureedge.net/0.12.17/survey.jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/survey-knockout/0.12.17/survey.ko.min.js"></script>
+
+
+<script type="text/javascript" src="{% static 'js/survey.js' %}"></script>
+<link href="{% static 'css/survey.css' %}" rel="stylesheet">
+
+
+<script type="text/javascript">
+    var que_data = JSON.parse("{{ surveyMaterial|escapejs }}");
+    window.onload = function(){
+
+    Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+    Survey.defaultBootstrapCss.matrixdynamic.button = "btn btn-green";
+    Survey.Survey.cssType = "bootstrap";
+
+    var survey = new Survey.Model(que_data);
+
+    var csrftoken = getCookie('csrftoken');
+
+    function getCookie(name) {
+              var cookieValue = null;
+              if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+              for (var i = 0; i < cookies.length; i++) {
+                   var cookie = jQuery.trim(cookies[i]);
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+                 }
+              }
+          }
+     return cookieValue;
+    }
+
+    survey.onComplete.add(function(result) {
+        //document.querySelector('#surveyResult').innerHTML = "result: " + JSON.stringify(result.data);
+        console.log(result.data);
+        //theData = JSON.stringify(result.data)
+        //theData = theData + ","
+        $.ajax({
+            type: "POST",
+            url: window.location.href,
+            dataType: "json",
+            data: { surveyData: JSON.stringify(result.data),
+                    csrfmiddlewaretoken: csrftoken},
+            success: function(data){
+                alert("success");
+            }
+        });
+        
+    });
+
+    survey.render("surveyElement");
+    
+
+}
+    
+</script>
+
+<div id="surveyContainer"></div>
+
+<div id="surveyElement"></div>
+<div id="surveyResult"></div>
+
+{% endblock content %}

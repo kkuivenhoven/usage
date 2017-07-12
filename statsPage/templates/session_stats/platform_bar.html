@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Platform Stats<br><p>&nbsp;&nbsp;&nbsp;&nbsp;Hover over bar graph for statistical details</p>{% endblock title %}
+
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'css/session_stats/platform_bar.css' %}" rel="stylesheet">
+
+
+<br>
+<div class="small_chart">
+  {% if d_count > 0 %}
+      <div style="width: {{d_count}}px;" tooltip="Platform: Darwin &rarr; Count: {{d_count}}"></div>
+  {% endif %}
+  {% if l_count > 0 %}
+      <div style="width: {{l_count}}px;" tooltip="Platform: Linux &rarr; Count: {{l_count}}"></div>
+  {% endif %}
+  {% if m_count > 0 %}
+      <div style="width: {{m_count}}px;" tooltip="Platform: Mozilla &rarr; Count: {{m_count}}"></div>
+  {% endif %}
+</div>
+
+<div class="chart">
+  {% if d_count > 0 %}
+      <div style="width: {{d_graph}}px;" tooltip="Platform: Darwin &rarr; Count: {{d_count}}"></div>
+  {% endif %}
+  {% if l_count > 0 %}
+      <div style="width: {{l_graph}}px;" tooltip="Platform: Linux &rarr; Count: {{l_count}}"></div>
+  {% endif %}
+  {% if m_count > 0 %}
+      <div style="width: {{m_graph}}px;" tooltip="Platform: Mozilla &rarr; Count: {{m_count}}"></div>
+  {% endif %}
+</div>
+
+{% endblock content %}
+

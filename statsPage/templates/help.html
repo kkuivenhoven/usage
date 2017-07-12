@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}UV-CDAT Analytics<br><p>&nbsp;&nbsp;&nbsp;&nbsp;Help</p>{% endblock title %}
+
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'css/help/help.css' %}" rel="stylesheet">
+
+<div class="container">
+    <center>
+
+      <p id="reasoning">
+        It is important for the developers of UV-CDAT to collect usage data for a multitude of reasons. These reasons range from improving the customer experience to allowing the developers to fine tune which functions are popular and which functions are not. This allows the developers to better prioritize their time and improves the UV-CDAT tool for better functionality and overall user experience. In other words, the developer will know which functions are popular enough to expand and improve upon for the ultimate user experience. Another reason is that it will allow developers to discover patterns when there are bug crashes – thus, developers will be able to fix issues with UV-CDAT faster because they’ll know precisely where the issue lies. These tools within UV-CDAT provide synergistic approaches to climate modeling, allowing researchers to quickly evaluate Earth system science output. 
+        </p>
+
+        <p id="help_page">
+            Please contact our support team at 
+            <!--span id="help_email"-->
+                <a href="mailto:uv-cdat-support@llnl.gov">uvcdat-support@llnl.gov</a>
+            <!--/span--> 
+            if you have any questions, concerns, or comments.<!--/p></center>
+            <center-->
+            <br>
+            You can also visit the UV-CDAT Support Page at 
+            <a href="https://uvcdat.llnl.gov/contact.html">https://uvcdat.llnl.gov/contact.html</a> 
+            for other support resources.
+        </p>
+    </center>
+</div>
+        
+
+{% endblock content %}

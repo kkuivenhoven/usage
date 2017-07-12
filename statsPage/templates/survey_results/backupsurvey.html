@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Survey<br><p>&nbsp;&nbsp;&nbsp;A survey for users to help UV-CDAT developers make improvements</p>{% endblock title %}
+
+{% block content %}
+{% load staticfiles %}
+
+<!--script src="https://cdnjs.cloudflare.com/ajax/libs/survey-jquery/0.12.17/survey.jquery.min.js"></script-->
+<script src="https://surveyjs.azureedge.net/0.12.17/survey.jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/survey-knockout/0.12.17/survey.ko.min.js"></script>
+
+
+<script type="text/javascript" src="{% static 'js/survey.js' %}"></script>
+<link href="{% static 'css/survey.css' %}" rel="stylesheet">
+
+<!--{all_lines}}<br-->
+
+<script type="text/javascript">
+
+window.onload = function() {
+    var json = {
+    "pages": [{
+            "elements": [{
+                    "type": "radiogroup",
+                    "choices": [{
+                            "value": "linux",
+                            "text": "Linux"
+                        },
+                        {
+                            "value": "darwin",
+                            "text": "Darwin"
+                        },
+                        {
+                            "value": "windows",
+                            "text": "Windows"
+                        }
+                    ],
+                    "isRequired": true,
+                    "name": "favoriteOs",
+                    "title": "Which OS do you use CDAT with?"
+                },
+                {
+                    "type": "radiogroup",
+                    "choices": [{
+                            "value": "no",
+                            "text": "No"
+                        },
+                        {
+                            "value": "yes",
+                            "text": "Yes"
+                        }
+                    ],
+                    "choicesOrder": "desc",
+                    "isRequired": true,
+                    "name": "packageUsage",
+                    "title": "Do you use the whole data package or a subset?"
+                },
+                {
+                    "type": "checkbox",
+                    "choices": [
+                        "cdutil",
+                        "genutil",
+                        "vcs",
+                        "CDP",
+                        "cdms2"
+                    ],
+                    "name": "subPackageUsage",
+                    "title": "Which sub-packages do you have installed?",
+                    "visible": false,
+                    "visibleIf": "{packageUsage}='no'"
+                },
+                {
+                    "type": "comment",
+                    "isRequired": true,
+                    "name": "Improvements",
+                    "title": "What would you like to see improved?"
+                },
+                {
+                    "type": "radiogroup",
+                    "choices": [{
+                            "value": "everyday",
+                            "text": "Everyday"
+                        },
+                        {
+                            "value": "fewWeeks",
+                            "text": "A few times a week"
+                        },
+                        {
+                            "value": "coupleWeeks",
+                            "text": "Every couple weeks"
+                        },
+                        {
+                            "value": "onceMonth",
+                            "text": "Once a month"
+                        },
+                        {
+                            "value": "coupleMonths",
+                            "text": "Every couple months"
+                        }
+                    ],
+                    "isRequired": true,
+                    "name": "Cdat Usage",
+                    "title": "How often do you use CDAT?"
+                },
+                {
+                    "type": "checkbox",
+                    "name": "CDATusedFOR",
+                    "title": "What do you use CDAT for?",
+                    "isRequired": true,
+                    "choices": [{
+                            "value": "climate",
+                            "text": "Climate"
+                        },
+                        {
+                            "value": "weather",
+                            "text": "Weather"
+                        },
+                        {
+                            "value": "biology",
+                            "text": "Biology"
+                        },
+                        {
+                            "value": "astronomy",
+                            "text": "Astronomy"
+                        },
+                        {
+                            "value": "other",
+                            "text": "Other"
+                        }
+                    ],
+                },
+                {
+                    "type": "comment",
+                    "name": "cdatUSEDfreeRESPONSE",
+                    "title": "Please explain what else you use CDAT for.",
+                    "visible": false,
+                    "visibleIf": "{CDATusedFOR} = 'other'"
+                },
+                {
+                    "type": "comment",
+                    "isRequired": true,
+                    "name": "fileFormat",
+                    "title": "Is there any file format you would like to see?"
+                }
+            ],
+            "name": "page1"
+        },
+        {
+            "elements": [{
+                    "type": "radiogroup",
+                    "choices": [{
+                            "value": "veryEasy",
+                            "text": "Very Easy"
+                        },
+                        {
+                            "value": "easy",
+                            "text": "Easy"
+                        },
+                        {
+                            "value": "moderate",
+                            "text": "Moderate"
+                        },
+                        {
+                            "value": "difficult",
+                            "text": "Difficult"
+                        },
+                        {
+                            "value": "veryDifficult",
+                            "text": "Very Difficult"
+                        }
+                    ],
+                    "isRequired": true,
+                    "name": "installationProcess",
+                    "title": "The installation process was..."
+                },
+                {
+                    "type": "comment",
+                    "name": "question2",
+                    "title": "Please explain what was difficult in regards to the installation process.",
+                    "visible": false,
+                    "visibleIf": "({installationProcess} = 'veryDifficult' or {installationProcess} = 'difficult')"
+                },
+                {
+                    "type": "html",
+                    "name": "htmlgithub",
+                    "html": "Please file a github <a href='https://github.com/UV-CDAT/uvcdat/issues'>issue</a> with images and examples as well.",
+                    "visible": false,
+                    "visibleIf": "({installationProcess} = 'veryDifficult' or {installationProcess} = 'difficult')"
+                },
+                {
+                    "type": "radiogroup",
+                    "choices": [{
+                            "value": "yes",
+                            "text": "Yes"
+                        },
+                        {
+                            "value": "no",
+                            "text": "No"
+                        }
+                    ],
+                    "isRequired": true,
+                    "name": "useOnWindows",
+                    "title": "Would you use CDAT under Windows?"
+                },
+                {
+                    "type": "html",
+                    "name": "windowhtml",
+                    "html": "Note: this is possible, find out more <a href='https://github.com/UV-CDAT/uvcdat/wiki/CDAT-under-windows'>here</a>.",
+                },
+                {
+                    "type": "radiogroup",
+                    "choices": [{
+                            "value": "yes",
+                            "text": "Yes"
+                        },
+                        {
+                            "value": "no",
+                            "text": "No"
+                        }
+                    ],
+                    "isRequired": true,
+                    "name": "python3compatible",
+                    "title": "Would you use a Python 3 compatible version?"
+                },
+                {
+                    "type": "comment",
+                    "isRequired": true,
+                    "name": "viz",
+                    "title": "Is there any visualization/graphics you would like to see?"
+                },
+                {
+                    "type": "checkbox",
+                    "isRequired": true,
+                    "choices": [{
+                            "value": "dataio",
+                            "text": "Data I/O"
+                        },
+                        {
+                            "value": "graphics",
+                            "text": "Graphics"
+                        },
+                        {
+                            "value": "analysis",
+                            "text": "Analysis"
+                        }
+                    ],
+                    "colCount": 3,
+                    "name": "mostUsed",
+                    "title": "Which area of CDAT do you use most often?"
+                },
+                {
+                    "type": "checkbox",
+                    "isRequired": true,
+                    "choices": [
+                        "cdms2",
+                        "vcs",
+                        "cdutil",
+                        "genutil",
+                        {
+                            "value": "vcsAddOns",
+                            "text": "vcsaddons"
+                        },
+                        "other"
+                    ],
+                    "colCount": 3,
+                    "name": "cdatPackages",
+                    "title": "Which packages of CDAT do you use most often?"
+                },
+                {
+                    "type": "comment",
+                    "name": "otherExplained",
+                    "title": "What other parts of CDAT do you use most often that are not listed above?",
+                    "visible": false,
+                    "visibleIf": "{cdatPackages} = 'other'"
+                }
+            ],
+            "name": "page2"
+        }
+    ]
+};
+
+    Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+    Survey.defaultBootstrapCss.matrixdynamic.button = "btn btn-green";
+    Survey.Survey.cssType = "bootstrap";
+
+    var survey = new Survey.Model(json);
+
+    var csrftoken = getCookie('csrftoken');
+
+    function getCookie(name) {
+              var cookieValue = null;
+              if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+              for (var i = 0; i < cookies.length; i++) {
+                   var cookie = jQuery.trim(cookies[i]);
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+                 }
+              }
+          }
+     return cookieValue;
+    }
+
+    survey.onComplete.add(function(result) {
+        //document.querySelector('#surveyResult').innerHTML = "result: " + JSON.stringify(result.data);
+        console.log(result.data);
+        //theData = JSON.stringify(result.data)
+        //theData = theData + ","
+        $.ajax({
+            type: "POST",
+            url: window.location.href,
+            dataType: "json",
+            data: { surveyData: JSON.stringify(result.data),
+                    csrfmiddlewaretoken: csrftoken},
+            success: function(data){
+                alert("success");
+            }
+        });
+        
+    });
+
+    survey.render("surveyElement");
+    
+
+}
+</script>
+
+<div id="surveyContainer"></div>
+
+<div id="surveyElement"></div>
+<div id="surveyResult"></div>
+
+
+{% endblock content %}
+
+
+

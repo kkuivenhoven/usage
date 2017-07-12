@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}User Awareness<br><p>&nbsp;&nbsp;&nbsp;&nbsp;The user aware that vcs can render plots using mesa as a backend. Chart of how often the user uses the feature</p>{% endblock title %}
+
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'css/survey_results.css' %}" rel="stylesheet">
+<head>
+    <script type="text/javascript">
+        var que;
+        window.onload = function(){
+            if(que != "true"){
+                document.getElementById("tooltip").style.display = "none";
+                que = "true";
+            }
+        }
+    </script>
+</head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<table style="width:75%">
+    <tr>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+    <tr>
+        <td>
+            <div id="tooltip" style="hidden">
+                <p><span id="value"></span></p>
+            </div>
+            <div id="mostUsed_chart"></div>
+        </td>
+        <td>
+            <a class="btn" href="/results_installProc">Install Process</a><br>
+            <a class="btn" href="/results_cdat_pack">CDAT Packages</a><br>
+            <a class="btn" href="/results_packageUsage">Package Usage</a><br>
+            <a class="btn" href="/results_mostUsed">Most Used Packages</a><br>
+            <a class="btn" href="/response_time">Response Time</a><br>
+            <a class="btn" href="/cdat_used_for">CDAT Used For</a><br>
+            <a class="btn" href="/commandLine_UI">Command Line UI</a><br>
+            <a class="btn" href="/fav_OS">Favorite OS</a><br>
+            <a class="btn" href="/gui_dis_like">GUI Likes and Dislikes</a><br>
+            <a class="btn" href="/useOnWindows">Use on Windows</a><br>
+            <a class="btn" href="/dataFileFormat">Data File Format</a><br>
+            <a class="btn" href="/otherTools">Other Tools</a><br>
+            <a class="btn" href="/userSupportUsefulness">Usefulness of User Support</a><br>
+            <a class="btn" href="/graphicsMostUsed">Most Used Graphics</a><br>
+            <a class="btn" href="/averageTimeToPlot">Average Time to Plot</a><br>
+            <a class="btn" href="/howOftenUsed">How Often Used</a><br>
+            <a class="btn" href="/dataFormatConvention">Data Format Convention</a><br>
+        </td>
+        <td>
+            <a class="btn" href="/youTubeHelp">YouTube Usefulness</a><br>
+            <a class="btn" href="/docUsefulness">Documentation Usefulness</a><br>
+            <a class="btn" href="/galleryUsefulness">Gallery Usefulness</a><br>
+            <a class="btn" href="/fileFormat">File Format</a><br>
+            <a class="btn" href="/analysisAvgLength">Analysis Average Length</a><br>
+            <a class="btn" href="/additionalConcerns">Additional Concerns</a><br>
+            <a class="btn" href="/sizeOfDataFiles">Data File Sizes</a><br>
+            <a class="btn" href="/cmndline">Command Line Likes and Dislikes</a><br>
+            <a class="btn" href="/whichFeature">Which Feature</a><br>
+            <a class="btn" href="/guiUsefulness">Usefulness of the GUI</a><br>
+            <a class="btn" href="/otherVizGraphics">Other Visualizations/Graphics</a><br>
+            <a class="btn" href="/improvements">Improvements</a><br>
+            <a class="btn" href="/python3comp">Python 3 Compatibility</a><br>
+            <a class="btn" href="/userAwareness">User Awareness</a><br>
+            <a class="btn disabled" href="/YesUserAwareness">User is Aware</a><br>
+            <a class="btn" href="/NoUserAwareness">User is not Aware</a><br>
+            <a class="btn" href="/subPackageUsage">Sub-package Usage</a><br>
+        </td>
+    </tr>
+</table>
+
+<script>
+
+      (function(d3) {
+        'use strict';
+
+        var dataset = {{all_responses|safe}};
+
+        var width = 550;
+        var height = 360;
+        var radius = Math.min(width, height) / 2;
+        var donutWidth = 75;
+        var legendRectSize = 18;
+        var legendSpacing = 4;
+
+        var color = d3.scaleOrdinal(d3.schemeCategory20b);
+
+        var svg = d3.select('#mostUsed_chart')
+          .append('svg')
+          .attr('width', width)
+          .attr('height', height)
+          .append('g')
+          .attr('transform', 'translate(' + (width / 2) +
+            ',' + (height / 2) + ')');
+
+        var arc = d3.arc()
+          .innerRadius(radius - donutWidth)
+          .outerRadius(radius);
+
+        var pie = d3.pie()
+          .value(function(d) { return d.count; })
+          .sort(null);
+
+        var total = 0;
+        for(var i = 0; i < dataset.length; i++){
+            total += dataset[i]['count'];
+        }
+
+        var path = svg.selectAll('path')
+          .data(pie(dataset))
+          .enter()
+          .append('path')
+          .attr('d', arc)
+          .attr('fill', function(d) {
+            return color(d.data.label);
+          })
+          .on('mouseover', function (d) {
+                d3.select('#tooltip')
+                    .style('display', 'block')
+                    .style('left', d3.event.pageX + 'px')
+                    .style('top', d3.event.pageY + 'px')
+                    .style('opacity', 1)
+                    .select('#value')
+                    .text(d.data.label + ": " + (((d.value)/total)*100).toFixed(2) + "%");
+           })
+          .on('mouseout', function () {
+              d3.select('#tooltip')
+                  .style('opacity', 0);;
+          });
+
+        var legend = svg.selectAll('.legend')                     
+          .data(color.domain())                                  
+          .enter()                                              
+          .append('g')                                          
+          .attr('class', 'legend')                              
+          .attr('transform', function(d, i) {                   
+            var height = legendRectSize + legendSpacing;        
+            var offset =  height * color.domain().length / 2;  
+            var horz = -2 * legendRectSize;                   
+            var vert = i * height - offset;                   
+            return 'translate(' + (-275) + ',' + vert + ')';  
+          });                                                
+
+        legend.append('rect')                               
+          .attr('width', legendRectSize)                   
+          .attr('height', legendRectSize)                   
+          .style('fill', color)                             
+          .style('stroke', color);                          
+
+        legend.append('text')                              
+          .attr('x', legendRectSize + legendSpacing)      
+          .attr('y', legendRectSize - legendSpacing)     
+          .text(function(d) { return d; });             
+
+      })(window.d3);
+
+</script>
+
+{% endblock content %}

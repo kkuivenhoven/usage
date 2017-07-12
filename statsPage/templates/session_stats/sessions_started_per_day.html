@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Sessions Started Per Day<br><p>&nbsp;&nbsp;&nbsp;&nbsp;Hover over the graph for more details</p>{% endblock title %}
+
+{% block content %}
+{% load staticfiles %}
+<!-- https://codepen.io/g1eb/pen/KWXzLR -->
+<!--link rel="stylesheet" type="text/css" href="dist/calendar-heatmap.min.css"-->
+<!--script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script-->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js" charset="utf-8"></script>
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="{% static 'js/session_stats/calendar_heatmap.js' %}"></script>
+<link href="{% static 'css/session_stats/calendar_heatmap.css' %}" rel="stylesheet">
+
+<body>
+</body>
+
+<script type="text/javascript">
+      var now = moment().endOf('day').toDate();
+      var yearAgo = moment().startOf('day').subtract(1, 'year').toDate();
+      var chartData = {{heatmap_dates|safe}};
+      var heatmap = calendarHeatmap()
+                      .data(chartData)
+                      .selector('.container')
+                      .tooltipEnabled(true)
+                      .colorRange(['#f4f7f7', '#79a8a9'])
+                      .onClick(function (data) {
+                        console.log('data', data);
+                      });
+      heatmap();
+</script>
+
+
+
+
+{% endblock content %}

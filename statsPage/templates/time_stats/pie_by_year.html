@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Pie Chart By Year<br><p>&nbsp;&nbsp;&nbsp;Indicate which year for usage stats{% endblock title %}
+
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'css/survey_results.css' %}" rel="stylesheet">
+<head>
+    <script type="text/javascript">
+        var que;
+        window.onload = function(){
+            if(que != "true"){
+                document.getElementById("tooltip").style.display = "none";
+                que = "true";
+            }
+        }
+    </script>
+</head>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js"></script>
+<link href="{% static 'css/time_stats/pie_by_year.css' %}" rel="stylesheet">
+
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+
+    <div class="dropdown show">
+      <button class="btn btn-secondary dropdown-toggle" href="https://example.com" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Please pick a year
+      </button>
+
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+         {% for key, values in deck.items %}
+                <li><a class="dropdown-item" href="#" onclick="loadpiechart({{values}}, {{key}})">For {{key}} data</a></li>
+         {% endfor %}
+      </ul>
+    </div>
+<br>
+
+<div id="tooltip" style="hidden">
+    <p><span id="value"></span></p>
+</div>
+<center><div id="chart"></div></center>
+
+    <script>
+function loadpiechart(months, year){
+      (function(d3) {
+        'use strict';
+        var testing = {{deck|safe}};
+        var trueData = []
+        if(trueData.length == 0){
+            d3.select("svg").remove();
+        }
+        for(var key in testing){
+            if(year == key){
+                var value = testing[key];
+                var jan = 0, feb = 0, march = 0, april = 0, may = 0, june = 0, july = 0, aug = 0, sept = 0, oct = 0, nov = 0, dec = 0;
+                //var dict = {};
+                //var year = {};
+                for(var i=0; i<value.length; i++){
+                   if(value[i] == 1){
+                        jan += 1; 
+                   }
+                   if(value[i] == 2){
+                        feb += 1;
+                   }
+                   if(value[i] == 3){
+                        march += 1;
+                   }
+                   if(value[i] == 4){
+                        april += 1;
+                   }
+                   if(value[i] == 5){
+                        may += 1;
+                   }
+                   if(value[i] == 6){
+                        june += 1;
+                   }
+                   if(value[i] == 7){
+                        july += 1;
+                   }
+                   if(value[i] == 8){
+                        aug += 1;
+                   }
+                   if(value[i] == 9){
+                        sept += 1;
+                   }
+                   if(value[i] == 10){
+                        oct += 1;
+                   }
+                   if(value[i] == 11){
+                        nov += 1;
+                   }
+                   if(value[i] == 12){
+                        dec += 1;
+                   }
+                }
+            }
+            for(var i=0; i<12; i++){
+                var dict = {};
+                if(i==0){
+                    dict["label"] = "January";
+                    dict["count"] = jan;
+                }
+                if(i==1){
+                    dict["label"] = "February";
+                    dict["count"] = feb;
+                }
+                if(i==2){
+                    dict["label"] = "March";
+                    dict["count"] = march;
+                }
+                if(i==3){
+                    dict["label"] = "April";
+                    dict["count"] = april;
+                }
+                if(i==4){
+                    dict["label"] = "May";
+                    dict["count"] = may;
+                }
+                if(i==5){
+                    dict["label"] = "June";
+                    dict["count"] = june;
+                }
+                if(i==6){
+                    dict["label"] = "July";
+                    dict["count"] = july;
+                }
+                if(i==7){
+                    dict["label"] = "August";
+                    dict["count"] = aug;
+                }
+                if(i==8){
+                    dict["label"] = "September";
+                    dict["count"] = sept;
+                }
+                if(i==9){
+                    dict["label"] = "October";
+                    dict["count"] = oct;
+                }
+                if(i==10){
+                    dict["label"] = "November";
+                    dict["count"] = nov;
+                }
+                if(i==11){
+                    dict["label"] = "December";
+                    dict["count"] = dec;
+                }
+                trueData.push(dict);
+            }
+        }
+        var dataset = trueData;
+        var width = 550;
+        var height = 360;
+        var radius = Math.min(width, height) / 2;
+        var color = d3.scaleOrdinal(d3.schemeCategory20b);
+        var donutWidth = 75;
+        var legendRectSize = 18;
+        var legendSpacing = 4;
+
+        var svg = d3.select('#chart')
+          .append('svg')
+          .attr('width', width)
+          .attr('height', height)
+          .append('g')
+          .attr('transform', 'translate(' + (width / 2) +
+            ',' + (height / 2) + ')');
+
+        var arc = d3.arc()
+          .innerRadius(radius - donutWidth)
+          .outerRadius(radius);
+
+        var pie = d3.pie()
+          .value(function(d) { return d.count; })
+          .sort(null);
+
+        var total = 0;
+        for(var i = 0; i < dataset.length; i++){
+            total += dataset[i]['count'];
+        }
+
+        var path = svg.selectAll('path')
+          .data(pie(dataset))
+          .enter()
+          .append('path')
+          .attr('d', arc)
+          .attr('fill', function(d) {
+            return color(d.data.label);
+          })
+          .on('mouseover', function (d) {
+                d3.select('#tooltip')
+                    .style('display', 'block')
+                    .style('left', d3.event.pageX + 'px')
+                    .style('top', d3.event.pageY + 'px')
+                    .style('opacity', 1)
+                    .select('#value')
+                    .text(d.data.label + ": " + (((d.value)/total)*100).toFixed(2) + "%");
+           })
+          .on('mouseout', function () {
+              d3.select('#tooltip')
+                  .style('opacity', 0);;
+          });
+
+        var legend = svg.selectAll('.legend')
+          .data(color.domain())
+          .enter()
+          .append('g')
+          .attr('class', 'legend')
+          .attr('transform', function(d, i) {
+            var height = legendRectSize + legendSpacing;
+            var offset =  height * color.domain().length / 2;
+            var horz = -2 * legendRectSize;
+            var vert = i * height - offset;
+            //return 'translate(' + horz + ',' + vert + ')';
+            return 'translate(' + (-275) + ',' + vert + ')';
+          });
+
+        legend.append('rect')
+          .attr('width', legendRectSize)
+          .attr('height', legendRectSize)
+          .style('fill', color)
+          .style('stroke', color);
+
+        legend.append('text')
+          .attr('x', legendRectSize + legendSpacing)
+          .attr('y', legendRectSize - legendSpacing)
+          .text(function(d) { return d; });
+
+      })(window.d3);
+    }
+    </script>
+  </body>
+</html>
+
+{% endblock content %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Average Length<br><p>&nbsp;&nbsp;&nbsp;&nbsp;Average length it takes the user to do an analysis</p>{% endblock title %}
+
+{% block content %}
+{% load staticfiles %}
+<link href="{% static 'css/survey.css' %}" rel="stylesheet">
+
+<table style="width:75%">
+    <tr>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+    <tr>
+        <td>
+            <div class="surveypre-scrollable">
+                <ul class="list-group">
+                    {% for each in all_responses %}
+                        <li class="list-group-item">{{each}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </td>
+        <td>
+            <a class="btn" href="/results_installProc">Install Process</a><br>
+            <a class="btn" href="/results_cdat_pack">CDAT Packages</a><br>
+            <a class="btn" href="/results_packageUsage">Package Usage</a><br>
+            <a class="btn" href="/results_mostUsed">Most Used Packages</a><br>
+            <a class="btn" href="/response_time">Response Time</a><br>
+            <a class="btn" href="/cdat_used_for">CDAT Used For</a><br>
+            <a class="btn" href="/commandLine_UI">Command Line UI</a><br>
+            <a class="btn" href="/fav_OS">Favorite OS</a><br>
+            <a class="btn" href="/gui_dis_like">GUI Likes and Dislikes</a><br>
+            <a class="btn" href="/useOnWindows">Use on Windows</a><br>
+            <a class="btn" href="/dataFileFormat">Data File Format</a><br>
+            <a class="btn" href="/otherTools">Other Tools</a><br>
+            <a class="btn" href="/userSupportUsefulness">Usefulness of User Support</a><br>
+            <a class="btn" href="/graphicsMostUsed">Most Used Graphics</a><br>
+            <a class="btn" href="/averageTimeToPlot">Average Time to Plot</a><br>
+            <a class="btn" href="/howOftenUsed">How Often Used</a><br>
+            <a class="btn" href="/dataFormatConvention">Data Format Convention</a><br>
+        </td>
+        <td>
+            <a class="btn" href="/youTubeHelp">YouTube Usefulness</a><br>
+            <a class="btn" href="/docUsefulness">Documentation Usefulness</a><br>
+            <a class="btn" href="/galleryUsefulness">Gallery Usefulness</a><br>
+            <a class="btn" href="/fileFormat">File Format</a><br>
+            <a class="btn disabled" href="/analysisAvgLength">Analysis Average Length</a><br>
+            <a class="btn" href="/additionalConcerns">Additional Concerns</a><br>
+            <a class="btn" href="/sizeOfDataFiles">Data File Sizes</a><br>
+            <a class="btn" href="/cmndline">Command Line Likes and Dislikes</a><br>
+            <a class="btn" href="/whichFeature">Which Feature</a><br>
+            <a class="btn" href="/guiUsefulness">Usefulness of the GUI</a><br>
+            <a class="btn" href="/otherVizGraphics">Other Visualizations/Graphics</a><br>
+            <a class="btn" href="/improvements">Improvements</a><br>
+            <a class="btn" href="/python3comp">Python 3 Compatibility</a><br>
+            <a class="btn" href="/userAwareness">User Awareness</a><br>
+            <a class="btn" href="/YesUserAwareness">User is Aware</a><br>
+            <a class="btn" href="/NoUserAwareness">User is not Aware</a><br>
+            <a class="btn" href="/subPackageUsage">Sub-package Usage</a><br>
+
+        </td>
+    </tr>
+</table>
+
+{% endblock content %}
